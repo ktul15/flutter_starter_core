@@ -1,0 +1,142 @@
+import 'package:dio/dio.dart';
+
+import '../network/api_client.dart';
+import '../network/api_exception.dart';
+import '../network/api_result.dart';
+import '../network/interceptors/auth_interceptor.dart';
+import '../network/request_runner.dart';
+import '../storage/token_store.dart';
+import 'auth_endpoints.dart';
+import 'models/auth_response.dart';
+import 'models/register_request.dart';
+
+/// High-level auth operations over [ApiClient].
+///
+/// Every method funnels through `requestRunner` and returns an [ApiResult].
+/// When a [TokenStore] is supplied, successful auth responses are persisted and
+/// [logout] clears it — so [refreshToken] can back an [AuthInterceptor]:
+///
+/// ```dart
+/// final auth = AuthService(client: client, tokenStore: store);
+/// AuthInterceptor(
+///   dio: client.dio,
+///   tokenProvider: store.readAccessToken,
+///   refreshToken: () async => (await auth.refreshToken()).isSuccess,
+///   onAuthExpired: () => store.clear(),
+/// );
+/// ```
+class AuthService {
+  AuthService({
+    required ApiClient client,
+    TokenStore? tokenStore,
+    AuthEndpoints endpoints = const AuthEndpoints(),
+  })  : _client = client,
+        _tokenStore = tokenStore,
+        _endpoints = endpoints;
+
+  final ApiClient _client;
+  final TokenStore? _tokenStore;
+  final AuthEndpoints _endpoints;
+
+  static AuthResponse _parseAuth(dynamic data) =>
+      AuthResponse.fromJson(data as Map<String, dynamic>);
+
+  Future<ApiResult<AuthResponse>> login(String email, String password) async {
+    final result = await requestRunner(
+      () => _client.post(_endpoints.login, data: {
+        'email': email,
+        'password': password,
+      }),
+      _parseAuth,
+    );
+    return _persist(result);
+  }
+
+  Future<ApiResult<AuthResponse>> register(RegisterRequest request) async {
+    final result = await requestRunner(
+      () => _client.post(_endpoints.register, data: request.toJson()),
+      _parseAuth,
+    );
+    return _persist(result);
+  }
+
+  Future<ApiResult<void>> forgotPassword(String email) => requestRunner(
+        () => _client.post(_endpoints.forgotPassword, data: {'email': email}),
+        (_) {},
+      );
+
+  Future<ApiResult<void>> resetPassword(String token, String newPassword) =>
+      requestRunner(
+        () => _client.post(_endpoints.resetPassword, data: {
+          'token': token,
+          'password': newPassword,
+        }),
+        (_) {},
+      );
+
+  Future<ApiResult<AuthResponse>> verifyOtp(String email, String code) async {
+    final result = await requestRunner(
+      () => _client.post(_endpoints.verifyOtp, data: {
+        'email': email,
+        'code': code,
+      }),
+      _parseAuth,
+    );
+    return _persist(result);
+  }
+
+  Future<ApiResult<void>> resendOtp(String email) => requestRunner(
+        () => _client.post(_endpoints.resendOtp, data: {'email': email}),
+        (_) {},
+      );
+
+  /// Exchanges the stored refresh token for a new session.
+  ///
+  /// Marked [AuthInterceptor.skipAuthRefreshKey] so the refresh call itself is
+  /// never intercepted for a 401 (which would recurse). On success the new
+  /// tokens are persisted; if no refresh token is stored, fails fast as
+  /// [ApiErrorType.unauthorized] without a network call.
+  Future<ApiResult<AuthResponse>> refreshToken() async {
+    final refresh = await _tokenStore?.readRefreshToken();
+    if (_tokenStore != null && (refresh == null || refresh.isEmpty)) {
+      return const Failure(
+        ApiException(
+          type: ApiErrorType.unauthorized,
+          message: 'No refresh token available.',
+        ),
+      );
+    }
+
+    final result = await requestRunner(
+      () => _client.post(
+        _endpoints.refresh,
+        data: {'refresh_token': ?refresh},
+        options: Options(extra: {AuthInterceptor.skipAuthRefreshKey: true}),
+      ),
+      _parseAuth,
+    );
+    return _persist(result);
+  }
+
+  /// Calls the logout endpoint and clears stored tokens regardless of outcome.
+  Future<ApiResult<void>> logout() async {
+    final result = await requestRunner(
+      () => _client.post(_endpoints.logout),
+      (_) {},
+    );
+    await _tokenStore?.clear();
+    return result;
+  }
+
+  Future<ApiResult<AuthResponse>> _persist(ApiResult<AuthResponse> result) async {
+    final store = _tokenStore;
+    if (store != null && result is Success<AuthResponse>) {
+      final data = result.data;
+      await store.writeTokens(
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      );
+    }
+    return result;
+  }
+}

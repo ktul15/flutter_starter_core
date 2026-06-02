@@ -18,6 +18,13 @@ export 'src/storage/token_store.dart';
 export 'src/storage/secure_token_store.dart';
 export 'src/config/env_config.dart';
 
+// Module 3 — Auth Service
+export 'src/auth/auth_service.dart';
+export 'src/auth/auth_endpoints.dart';
+export 'src/auth/models/user.dart';
+export 'src/auth/models/auth_response.dart';
+export 'src/auth/models/register_request.dart';
+
 // Re-export Dio types consumers need when wiring the client.
 export 'package:dio/dio.dart'
     show Dio, Interceptor, Options, Response, CancelToken, DioException;
