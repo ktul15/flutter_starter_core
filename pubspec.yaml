@@ -1,6 +1,7 @@
 name: mobilions_core
-description: "A new Flutter package project."
-version: 0.0.1
+description: "Reusable Flutter infrastructure: networking, auth, storage, theming, widgets, validation."
+version: 1.0.0
+publish_to: none
 homepage:
 
 environment:
