@@ -1,8 +1,8 @@
 name: mobilions_core
 description: "Reusable Flutter infrastructure: networking, auth, storage, theming, widgets, validation."
 version: 1.0.0
-publish_to: none
-homepage:
+repository: https://github.com/ketulmobilions-hub/mobilions_core
+homepage: https://github.com/ketulmobilions-hub/mobilions_core
 
 environment:
   sdk: ^3.11.1
