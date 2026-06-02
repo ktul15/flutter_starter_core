@@ -13,6 +13,11 @@ export 'src/network/interceptors/auth_interceptor.dart';
 export 'src/network/interceptors/error_interceptor.dart';
 export 'src/network/interceptors/log_interceptor.dart';
 
+// Module 2 — Storage + Config
+export 'src/storage/token_store.dart';
+export 'src/storage/secure_token_store.dart';
+export 'src/config/env_config.dart';
+
 // Re-export Dio types consumers need when wiring the client.
 export 'package:dio/dio.dart'
     show Dio, Interceptor, Options, Response, CancelToken, DioException;
