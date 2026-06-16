@@ -35,6 +35,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  flutter_bloc: ^9.0.0
+  equatable: ^2.0.5
+
   # In a real project this would be a git dependency; here we use a path.
   flutter_starter_core:
     path: ../
