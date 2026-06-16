@@ -38,6 +38,7 @@ export 'package:connectivity_plus/connectivity_plus.dart'
 // Module 6 — Theming
 export 'src/theme/app_theme.dart';
 export 'src/theme/theme_mode_controller.dart';
+export 'src/theme/persistent_theme_controller.dart';
 
 // Module 7 — Localization
 export 'src/localization/localization_setup.dart';

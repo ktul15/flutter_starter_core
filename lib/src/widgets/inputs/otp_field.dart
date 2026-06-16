@@ -104,11 +104,12 @@ class _OtpFieldState extends State<OtpField> {
 
   void _distribute(String pasted, {required int from}) {
     final digits = pasted.replaceAll(RegExp(r'\D'), '');
-    var cellIndex = from;
-    for (var i = 0; i < digits.length && cellIndex < widget.length; i++, cellIndex++) {
-      _controllers[cellIndex].text = digits[i];
+    // Always fill from cell 0 regardless of which cell received the paste.
+    // Users copying an SMS OTP code tap anywhere and expect the full code to
+    // land in order — starting from the focused cell breaks that expectation.
+    for (var i = 0; i < widget.length; i++) {
+      _controllers[i].text = i < digits.length ? digits[i] : '';
     }
-    // Focus the cell after the last filled cell, or unfocus if all filled.
     final nextEmpty = _controllers.indexWhere((c) => c.text.isEmpty);
     if (nextEmpty == -1) {
       _nodes.last.unfocus();

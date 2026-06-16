@@ -21,9 +21,9 @@ void main() {
   });
 
   test('reads access and refresh tokens by their keys', () async {
-    when(() => storage.read(key: 'mobilions_access_token'))
+    when(() => storage.read(key: 'fsc_access_token'))
         .thenAnswer((_) async => 'A');
-    when(() => storage.read(key: 'mobilions_refresh_token'))
+    when(() => storage.read(key: 'fsc_refresh_token'))
         .thenAnswer((_) async => 'R');
 
     expect(await store.readAccessToken(), 'A');
@@ -33,43 +33,43 @@ void main() {
   test('writeTokens persists both when refresh provided', () async {
     await store.writeTokens(accessToken: 'A', refreshToken: 'R');
 
-    verify(() => storage.write(key: 'mobilions_access_token', value: 'A'))
+    verify(() => storage.write(key: 'fsc_access_token', value: 'A'))
         .called(1);
-    verify(() => storage.write(key: 'mobilions_refresh_token', value: 'R'))
+    verify(() => storage.write(key: 'fsc_refresh_token', value: 'R'))
         .called(1);
   });
 
   test('writeTokens leaves refresh untouched when null', () async {
     await store.writeTokens(accessToken: 'A');
 
-    verify(() => storage.write(key: 'mobilions_access_token', value: 'A'))
+    verify(() => storage.write(key: 'fsc_access_token', value: 'A'))
         .called(1);
     verifyNever(() => storage.write(
-          key: 'mobilions_refresh_token',
+          key: 'fsc_refresh_token',
           value: any(named: 'value'),
         ));
-    verifyNever(() => storage.delete(key: 'mobilions_refresh_token'));
+    verifyNever(() => storage.delete(key: 'fsc_refresh_token'));
   });
 
   test('writeTokens with empty refresh deletes the refresh token', () async {
     await store.writeTokens(accessToken: 'A', refreshToken: '');
 
-    verify(() => storage.delete(key: 'mobilions_refresh_token')).called(1);
+    verify(() => storage.delete(key: 'fsc_refresh_token')).called(1);
   });
 
   test('clear deletes both tokens', () async {
     await store.clear();
 
-    verify(() => storage.delete(key: 'mobilions_access_token')).called(1);
-    verify(() => storage.delete(key: 'mobilions_refresh_token')).called(1);
+    verify(() => storage.delete(key: 'fsc_access_token')).called(1);
+    verify(() => storage.delete(key: 'fsc_refresh_token')).called(1);
   });
 
   test('hasAccessToken reflects presence', () async {
-    when(() => storage.read(key: 'mobilions_access_token'))
+    when(() => storage.read(key: 'fsc_access_token'))
         .thenAnswer((_) async => null);
     expect(await store.hasAccessToken, isFalse);
 
-    when(() => storage.read(key: 'mobilions_access_token'))
+    when(() => storage.read(key: 'fsc_access_token'))
         .thenAnswer((_) async => 'A');
     expect(await store.hasAccessToken, isTrue);
   });
