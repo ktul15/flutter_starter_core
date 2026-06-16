@@ -47,7 +47,7 @@ void main() {
       expect(result.errorOrNull?.type, ApiErrorType.network);
     });
 
-    test('wraps a parse/throw as unknown', () async {
+    test('wraps a parse/throw as parseFailure', () async {
       final result = await requestRunner<int>(
         () async => Response<dynamic>(
           requestOptions: RequestOptions(path: '/x'),
@@ -56,7 +56,70 @@ void main() {
         (data) => data as int, // throws TypeError
       );
 
-      expect(result.errorOrNull?.type, ApiErrorType.unknown);
+      expect(result.errorOrNull?.type, ApiErrorType.parseFailure);
+    });
+
+    test('unwrap extracts envelope before parse', () async {
+      final result = await requestRunner<int>(
+        () async => Response<dynamic>(
+          requestOptions: RequestOptions(path: '/x'),
+          data: {'data': 42},
+        ),
+        (data) => data as int,
+        unwrap: (body) => (body as Map<String, dynamic>)['data'],
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.dataOrNull, 42);
+    });
+
+    test('unwrap failure returns parseFailure', () async {
+      final result = await requestRunner<int>(
+        () async => Response<dynamic>(
+          requestOptions: RequestOptions(path: '/x'),
+          data: 'not-a-map',
+        ),
+        (data) => data as int,
+        unwrap: (body) => (body as Map<String, dynamic>)['data'], // throws cast
+      );
+
+      expect(result.errorOrNull?.type, ApiErrorType.parseFailure);
+    });
+
+    test('ApiException thrown by parse propagates with original type', () async {
+      const original = ApiException(
+        type: ApiErrorType.unauthorized,
+        message: 'token expired in body',
+        statusCode: 200,
+      );
+      final result = await requestRunner<int>(
+        () async => Response<dynamic>(
+          requestOptions: RequestOptions(path: '/x'),
+          data: {},
+        ),
+        (_) => throw original,
+      );
+
+      expect(result.errorOrNull, same(original));
+      expect(result.errorOrNull?.type, ApiErrorType.unauthorized);
+    });
+
+    test('ApiException thrown by unwrap propagates with original type', () async {
+      const original = ApiException(
+        type: ApiErrorType.server,
+        message: 'envelope missing',
+      );
+      final result = await requestRunner<int>(
+        () async => Response<dynamic>(
+          requestOptions: RequestOptions(path: '/x'),
+          data: {},
+        ),
+        (data) => data as int,
+        unwrap: (_) => throw original,
+      );
+
+      expect(result.errorOrNull, same(original));
+      expect(result.errorOrNull?.type, ApiErrorType.server);
     });
   });
 }

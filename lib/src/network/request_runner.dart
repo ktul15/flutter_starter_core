@@ -17,16 +17,43 @@ import 'error_mapper.dart';
 /// );
 /// ```
 ///
-/// [parse] receives the raw `Response.data`. A `DioException` carrying an
-/// [ApiException] (already mapped by [ErrorInterceptor]) is unwrapped; anything
-/// else is mapped here so the runner is safe to use without the interceptor.
+/// [parse] receives the raw `Response.data`, or the result of [unwrap] when
+/// provided. Use [unwrap] to strip a response envelope before parsing:
+///
+/// ```dart
+/// // Backend wraps all responses in {"data": {...}}
+/// final result = await requestRunner(
+///   () => client.get('/me'),
+///   User.fromJson,
+///   unwrap: (body) => (body as Map<String, dynamic>)['data'],
+/// );
+/// ```
+///
+/// Parse/unwrap failures return [ApiErrorType.parseFailure] so callers can
+/// distinguish bad response shapes from network errors. A `DioException`
+/// carrying an [ApiException] (already mapped by [ErrorInterceptor]) is
+/// unwrapped; anything else is mapped here so the runner is safe to use
+/// without the interceptor.
 Future<ApiResult<T>> requestRunner<T>(
   Future<Response<dynamic>> Function() call,
-  T Function(dynamic data) parse,
-) async {
+  T Function(dynamic data) parse, {
+  dynamic Function(dynamic body)? unwrap,
+}) async {
   try {
     final response = await call();
-    return Success(parse(response.data));
+    try {
+      final body = unwrap != null ? unwrap(response.data) : response.data;
+      return Success(parse(body));
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      return Failure(
+        ApiException(
+          type: ApiErrorType.parseFailure,
+          message: 'Response parse failed: $e',
+        ),
+      );
+    }
   } on DioException catch (e) {
     final error = e.error is ApiException
         ? e.error as ApiException

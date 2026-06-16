@@ -2,6 +2,15 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobilions_core/mobilions_core.dart';
 
+class _FakeDelegate extends LocalizationsDelegate<Object> {
+  @override
+  bool isSupported(Locale locale) => true;
+  @override
+  Future<Object> load(Locale locale) async => Object();
+  @override
+  bool shouldReload(covariant LocalizationsDelegate<Object> old) => false;
+}
+
 void main() {
   final config = LocalizationConfig(
     supportedLocales: const [
@@ -33,5 +42,23 @@ void main() {
       () => LocalizationConfig(supportedLocales: const []),
       throwsA(isA<AssertionError>()),
     );
+  });
+
+  test('allDelegates includes the three standard Material delegates', () {
+    final delegates = config.allDelegates.toList();
+    expect(delegates, contains(GlobalMaterialLocalizations.delegate));
+    expect(delegates, contains(GlobalWidgetsLocalizations.delegate));
+    expect(delegates, contains(GlobalCupertinoLocalizations.delegate));
+  });
+
+  test('allDelegates appends app-specific delegates after Material ones', () {
+    final appDelegate = _FakeDelegate();
+    final custom = LocalizationConfig(
+      supportedLocales: const [Locale('en')],
+      delegates: [appDelegate],
+    );
+    final list = custom.allDelegates.toList();
+    expect(list.last, same(appDelegate));
+    expect(list.length, 4); // 3 Material + 1 app
   });
 }

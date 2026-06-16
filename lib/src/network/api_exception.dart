@@ -18,7 +18,13 @@ enum ApiErrorType {
   /// HTTP 422/400 with field-level errors.
   validation,
 
-  /// Cancelled requests or anything unclassified.
+  /// Request was explicitly cancelled.
+  cancelled,
+
+  /// Response arrived but the body could not be parsed into the expected type.
+  parseFailure,
+
+  /// Anything unclassified.
   unknown,
 }
 

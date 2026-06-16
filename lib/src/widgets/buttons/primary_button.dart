@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 /// Full-width filled button with a built-in loading state.
 ///
-/// While [isLoading], the label is replaced by a spinner and taps are ignored.
-/// Passing a `null` [onPressed] disables it.
+/// While [isLoading], the label is replaced by a spinner and taps are blocked.
+/// Passing a `null` [onPressed] (with [isLoading] false) disables the button.
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
     super.key,
@@ -20,12 +20,19 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return FilledButton(
-      onPressed: isLoading ? null : onPressed,
+      // Keep button in enabled (non-grey) state while loading so the primary
+      // background is retained and the spinner is visible against it.
+      onPressed: isLoading ? () {} : onPressed,
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(52),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
       child: isLoading
-          ? const SizedBox.square(
+          ? SizedBox.square(
               dimension: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(strokeWidth: 2, color: onPrimary),
             )
           : _Label(label: label, icon: icon),
     );
@@ -49,16 +56,17 @@ class SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
     return OutlinedButton(
-      onPressed: isLoading ? null : onPressed,
+      onPressed: isLoading ? () {} : onPressed,
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: isLoading
-          ? const SizedBox.square(
+          ? SizedBox.square(
               dimension: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(strokeWidth: 2, color: primary),
             )
           : _Label(label: label, icon: icon),
     );

@@ -22,7 +22,7 @@ ApiException mapDioException(DioException e) {
       );
     case DioExceptionType.cancel:
       return ApiException(
-        type: ApiErrorType.unknown,
+        type: ApiErrorType.cancelled,
         message: 'Request was cancelled.',
       );
     case DioExceptionType.badCertificate:

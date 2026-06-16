@@ -37,10 +37,10 @@ void main() {
       );
     });
 
-    test('maps cancel to unknown', () {
+    test('maps cancel to cancelled', () {
       expect(
         mapDioException(_ofType(DioExceptionType.cancel)).type,
-        ApiErrorType.unknown,
+        ApiErrorType.cancelled,
       );
     });
 

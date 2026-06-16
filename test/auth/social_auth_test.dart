@@ -24,6 +24,7 @@ class _FakeGoogleProvider implements SocialAuthProvider {
       provider: SocialProvider.google,
       idToken: 'id-token',
       email: 'a@b.com',
+      nonce: 'abc123',
     );
   }
 
@@ -37,6 +38,7 @@ void main() {
     expect(result.provider, SocialProvider.google);
     expect(result.idToken, 'id-token');
     expect(result.email, 'a@b.com');
+    expect(result.nonce, 'abc123');
   });
 
   test('cancellation surfaces a typed exception', () async {

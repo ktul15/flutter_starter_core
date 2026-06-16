@@ -32,7 +32,8 @@ export 'src/auth/social/social_auth_exception.dart';
 
 // Module 5 — Connectivity
 export 'src/connectivity/connectivity_checker.dart';
-export 'package:connectivity_plus/connectivity_plus.dart' show Connectivity, ConnectivityResult;
+export 'package:connectivity_plus/connectivity_plus.dart'
+    show Connectivity, ConnectivityResult;
 
 // Module 6 — Theming
 export 'src/theme/app_theme.dart';
@@ -40,6 +41,11 @@ export 'src/theme/theme_mode_controller.dart';
 
 // Module 7 — Localization
 export 'src/localization/localization_setup.dart';
+export 'package:flutter_localizations/flutter_localizations.dart'
+    show
+        GlobalCupertinoLocalizations,
+        GlobalMaterialLocalizations,
+        GlobalWidgetsLocalizations;
 
 // Module 8 — Common Widgets
 export 'src/widgets/buttons/primary_button.dart';
@@ -57,6 +63,50 @@ export 'src/utils/pagination.dart';
 // Module 10 — Routing Guard
 export 'src/routing/route_guard.dart';
 
+// Module 11 — Retry Interceptor
+export 'src/network/interceptors/retry_interceptor.dart';
+
+// Module 12 — Utilities
+export 'src/utils/debouncer.dart';
+export 'src/utils/date_formatter.dart';
+export 'src/utils/haptic_service.dart';
+
+// Module 13 — Preferences
+export 'src/preferences/app_preferences.dart';
+export 'src/preferences/local_preferences.dart';
+
+// Module 14 — Crash Reporting
+export 'src/crash/crash_reporter.dart';
+
+// Module 15 — Analytics
+export 'src/analytics/analytics_event.dart';
+export 'src/analytics/analytics_service.dart';
+
+// Module 16 — Push Notifications
+export 'src/push/push_message.dart';
+export 'src/push/push_service.dart';
+
+// Module 17 — Permissions
+export 'src/permissions/app_permission.dart';
+export 'src/permissions/permission_handler.dart';
+
+// Module 18 — Media Picker
+export 'src/media/media_file.dart';
+export 'src/media/media_picker.dart';
+
+// Module 19 — OTP Widget
+export 'src/widgets/inputs/otp_field.dart';
+
+// Module 20 — AppMessenger
+export 'src/messenger/app_messenger.dart';
+
+// Module 21 — Network Image
+export 'src/widgets/image/app_network_image.dart';
+
+// Module 22 — Version Checker
+export 'src/version/version_status.dart';
+export 'src/version/version_checker.dart';
+
 // Re-export Dio types consumers need when wiring the client.
 export 'package:dio/dio.dart'
-    show Dio, Interceptor, Options, Response, CancelToken, DioException;
+    show Dio, FormData, Interceptor, MultipartFile, Options, Response, CancelToken, DioException;
