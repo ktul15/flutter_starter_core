@@ -1,5 +1,42 @@
 # Changelog
 
+## 1.2.0
+
+Bug fixes, security hardening, and new features across storage, network, theme, media, and push.
+
+### Added
+
+- **`PersistentThemeModeController`** — drop-in replacement for `ThemeModeController` that
+  auto-saves the selected `ThemeMode` to `AppPreferences` (`fsc_theme_mode` key) and restores
+  it on next launch. Use `await PersistentThemeModeController.create(prefs)` in `main()`.
+- **`MediaPicker.pickFile`** — picks any file type via `file_picker`. Pass
+  `allowedExtensions: ['pdf', 'docx']` to restrict. Returns `MediaFile` with MIME type derived
+  from extension; `.toMultipartFile()` works immediately.
+- **`templates/fcm_push_service.dart`** — copy-paste `PushService` implementation backed by
+  Firebase Cloud Messaging. Add `firebase_messaging: ^15.0.0` to the client app and copy the
+  template. Not compiled into the package — no Firebase dependency forced on consumers.
+
+### Fixed
+
+- **`OtpField` paste** — pasting a code now always fills from cell 0 regardless of which cell
+  was focused, and clears trailing cells. Matches user expectation when copying an SMS OTP code.
+- **`SecureTokenStore` default keys** — changed from `mobilions_access_token` /
+  `mobilions_refresh_token` to `fsc_access_token` / `fsc_refresh_token` to prevent keychain
+  collisions with other apps on shared keychain groups.
+- **`RetryInterceptor` extra key** — `mobilions_retry_count` → `fsc_retry_count`.
+
+### Changed
+
+- **`RetryInterceptor` backoff** — replaced fixed exponential delay with full jitter
+  (`Random().nextInt(ceiling)`). Prevents thundering-herd retries when many clients experience
+  the same outage simultaneously.
+
+### New dependency
+
+- `file_picker: ^8.1.0`
+
+---
+
 ## 1.1.0
 
 Modules 11–22: retry, utilities, preferences, crash reporting, analytics, push notifications,
