@@ -29,11 +29,9 @@ import 'version_status.dart';
 /// );
 /// ```
 class AppVersionChecker {
-  AppVersionChecker({
-    required ApiClient client,
-    required String endpoint,
-  })  : _client = client,
-        _endpoint = endpoint;
+  AppVersionChecker({required ApiClient client, required String endpoint})
+    : _client = client,
+      _endpoint = endpoint;
 
   final ApiClient _client;
   final String _endpoint;

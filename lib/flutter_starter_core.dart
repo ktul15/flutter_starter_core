@@ -110,4 +110,12 @@ export 'src/version/version_checker.dart';
 
 // Re-export Dio types consumers need when wiring the client.
 export 'package:dio/dio.dart'
-    show Dio, FormData, Interceptor, MultipartFile, Options, Response, CancelToken, DioException;
+    show
+        Dio,
+        FormData,
+        Interceptor,
+        MultipartFile,
+        Options,
+        Response,
+        CancelToken,
+        DioException;
