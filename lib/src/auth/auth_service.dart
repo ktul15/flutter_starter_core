@@ -90,6 +90,30 @@ class AuthService {
         (_) {},
       );
 
+  /// Requests the server to send an OTP to [email].
+  ///
+  /// Use for **Flow B** (OTP-first signup): call this before the user fills the
+  /// registration form. Back-ends that share an endpoint for initial send and
+  /// resend can substitute [resendOtp] instead.
+  Future<ApiResult<void>> sendOtp(String email) => requestRunner(
+        () => _client.post(_endpoints.sendOtp, data: {'email': email}),
+        (_) {},
+      );
+
+  /// Verifies [code] sent to [email] without completing authentication.
+  ///
+  /// Use for **Flow B** (OTP-first signup): call after [sendOtp] to confirm the
+  /// user owns the address, then proceed to [register]. Unlike [verifyOtp],
+  /// tokens are not persisted — only the code is validated.
+  Future<ApiResult<void>> verifyOtpOnly(String email, String code) =>
+      requestRunner(
+        () => _client.post(_endpoints.verifyOtp, data: {
+          'email': email,
+          'code': code,
+        }),
+        (_) {},
+      );
+
   /// Exchanges the stored refresh token for a new session.
   ///
   /// Marked [AuthInterceptor.skipAuthRefreshKey] so the refresh call itself is
