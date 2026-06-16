@@ -33,17 +33,19 @@ class RetryInterceptor extends Interceptor {
   final int maxRetries;
 
   /// Base delay between retries. With [useExponentialBackoff] enabled, the
-  /// actual delay is `retryDelay × 2^attempt`.
+  /// ceiling grows as `retryDelay × 2^attempt`; full jitter then picks a
+  /// random value in `[0, ceiling]` to prevent thundering-herd retries.
   final Duration retryDelay;
 
   /// When true, doubles the delay on each successive attempt.
   final bool useExponentialBackoff;
 
   final bool Function(DioException) _retryWhen;
+  final Random _rng = Random();
 
   /// Per-request `extra` key storing the current attempt count.
   /// Exposed so tests can inspect or seed retry state.
-  static const retryCountKey = 'mobilions_retry_count';
+  static const retryCountKey = 'fsc_retry_count';
 
   /// Default condition: retry only on connection/timeout errors, never on
   /// responses that carry a status code (4xx/5xx are deliberate).
@@ -65,9 +67,12 @@ class RetryInterceptor extends Interceptor {
       return;
     }
 
-    final delayMs = useExponentialBackoff
+    final baseMs = useExponentialBackoff
         ? (retryDelay.inMilliseconds * pow(2, attempt)).toInt()
         : retryDelay.inMilliseconds;
+    // Full jitter: uniform random in [0, baseMs] prevents thundering-herd
+    // when many clients retry simultaneously after the same outage.
+    final delayMs = _rng.nextInt(baseMs + 1);
 
     await Future<void>.delayed(Duration(milliseconds: delayMs));
 

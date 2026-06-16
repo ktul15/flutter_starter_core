@@ -13,8 +13,8 @@ class SecureTokenStore implements TokenStore {
     this.refreshTokenKey = _defaultRefreshKey,
   }) : _storage = storage ?? const FlutterSecureStorage();
 
-  static const _defaultAccessKey = 'mobilions_access_token';
-  static const _defaultRefreshKey = 'mobilions_refresh_token';
+  static const _defaultAccessKey = 'fsc_access_token';
+  static const _defaultRefreshKey = 'fsc_refresh_token';
 
   final FlutterSecureStorage _storage;
 
