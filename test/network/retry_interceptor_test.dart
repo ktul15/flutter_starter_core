@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:mobilions_core/mobilions_core.dart';
+import 'package:flutter_starter_core/flutter_starter_core.dart';
 
 class _MockAdapter extends Mock implements HttpClientAdapter {}
 

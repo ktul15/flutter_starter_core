@@ -1,4 +1,4 @@
-/// mobilions_core — reusable Flutter infrastructure.
+/// flutter_starter_core — reusable Flutter infrastructure.
 ///
 /// Public API barrel. Import this; everything under `src/` is private.
 library;

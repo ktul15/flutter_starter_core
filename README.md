@@ -1,4 +1,4 @@
-# mobilions_core
+# flutter_starter_core
 
 Reusable Flutter infrastructure for new client apps — networking, auth, secure
 storage, theming, common widgets, validation, and routing guards. Drop it in as
@@ -13,7 +13,7 @@ Git dependency (recommended). Pin a release tag:
 
 ```yaml
 dependencies:
-  mobilions_core:
+  flutter_starter_core:
     git:
       url: <private-repo-url>
       ref: v1.0.0
@@ -46,7 +46,7 @@ fvm flutter pub get
 Import everything from the one barrel:
 
 ```dart
-import 'package:mobilions_core/mobilions_core.dart';
+import 'package:flutter_starter_core/flutter_starter_core.dart';
 ```
 
 ## Configure → log in end to end

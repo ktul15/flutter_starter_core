@@ -15,7 +15,7 @@ class NetworkLogInterceptor extends Interceptor {
     if (kDebugMode) {
       developer.log(
         '→ ${options.method} ${options.uri}',
-        name: 'mobilions_core.net',
+        name: 'flutter_starter_core.net',
       );
     }
     handler.next(options);
@@ -26,7 +26,7 @@ class NetworkLogInterceptor extends Interceptor {
     if (kDebugMode) {
       developer.log(
         '← ${response.statusCode} ${response.requestOptions.uri}',
-        name: 'mobilions_core.net',
+        name: 'flutter_starter_core.net',
       );
     }
     handler.next(response);
@@ -37,7 +37,7 @@ class NetworkLogInterceptor extends Interceptor {
     if (kDebugMode) {
       developer.log(
         '✗ ${err.response?.statusCode ?? '-'} ${err.requestOptions.uri}: ${err.message}',
-        name: 'mobilions_core.net',
+        name: 'flutter_starter_core.net',
         level: 1000,
       );
     }

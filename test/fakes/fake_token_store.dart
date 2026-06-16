@@ -1,4 +1,4 @@
-import 'package:mobilions_core/mobilions_core.dart';
+import 'package:flutter_starter_core/flutter_starter_core.dart';
 
 /// In-memory [TokenStore] for tests. No platform channels.
 class FakeTokenStore implements TokenStore {

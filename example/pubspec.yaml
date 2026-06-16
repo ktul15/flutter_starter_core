@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # In a real project this would be a git dependency; here we use a path.
-  mobilions_core:
+  flutter_starter_core:
     path: ../
 
 dev_dependencies:

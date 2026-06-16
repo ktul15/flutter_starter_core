@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobilions_core/mobilions_core.dart';
+import 'package:flutter_starter_core/flutter_starter_core.dart';
 
 void main() {
   group('AppVersionInfo.status', () {
