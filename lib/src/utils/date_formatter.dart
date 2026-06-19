@@ -1,44 +1,137 @@
-/// Locale-agnostic date/time formatting helpers.
-///
-/// All methods accept [DateTime] values in any timezone; callers are
-/// responsible for converting to local time before passing if needed.
-///
-/// No `intl` dependency — uses hand-rolled formatting to keep the package
-/// lightweight. For locale-aware formatting inject `intl`'s `DateFormat` in
-/// the consuming app.
-abstract final class DateFormatter {
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
+import 'package:intl/intl.dart';
 
-  /// Human-readable relative time string.
-  ///
-  /// Examples: `"just now"`, `"5m ago"`, `"3h ago"`, `"2d ago"`, `"4w ago"`.
-  /// Falls back to [formatDate] for dates older than 4 weeks.
-  static String relative(DateTime date, {DateTime? now}) {
-    final ref = now ?? DateTime.now();
-    final diff = ref.difference(date);
+/// Locale-aware relative time label strings for [DateFormatter.relative].
+///
+/// For non-English locales call `initializeDateFormatting(locale)` once at
+/// app startup alongside `flutter_localizations` setup.
+class DateFormatterLocale {
+  DateFormatterLocale({
+    required this.justNow,
+    required this.minutesAgo,
+    required this.hoursAgo,
+    required this.daysAgo,
+    required this.weeksAgo,
+    required this.monthsAgo,
+    required this.yearsAgo,
+  });
 
-    if (diff.isNegative) return formatDate(date);
-    if (diff.inSeconds < 60) return 'just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    if (diff.inDays < 28) return '${(diff.inDays / 7).floor()}w ago';
-    return formatDate(date);
+  final String justNow;
+  final String Function(int n) minutesAgo;
+  final String Function(int n) hoursAgo;
+  final String Function(int n) daysAgo;
+  final String Function(int n) weeksAgo;
+  final String Function(int n) monthsAgo;
+  final String Function(int n) yearsAgo;
+
+  /// Arabic has singular / dual / plural (3–10) / large-number (11+) forms.
+  static String _ar(
+    int n, {
+    required String singular,
+    required String dual,
+    required String plural,
+    required String large,
+  }) {
+    if (n == 1) return 'منذ $singular';
+    if (n == 2) return 'منذ $dual';
+    if (n <= 10) return 'منذ $n $plural';
+    return 'منذ $n $large';
   }
 
-  /// Formats as `"15 Jun 2026"`.
-  static String formatDate(DateTime date) =>
-      '${date.day} ${_months[date.month - 1]} ${date.year}';
+  static final en = DateFormatterLocale(
+    justNow: 'just now',
+    minutesAgo: (n) => '${n}m ago',
+    hoursAgo: (n) => '${n}h ago',
+    daysAgo: (n) => '${n}d ago',
+    weeksAgo: (n) => '${n}w ago',
+    monthsAgo: (n) => '${n}mo ago',
+    yearsAgo: (n) => '${n}y ago',
+  );
 
-  /// Formats as `"14:30"` (24-hour).
-  static String formatTime(DateTime date) =>
-      '${date.hour.toString().padLeft(2, '0')}:'
-      '${date.minute.toString().padLeft(2, '0')}';
+  static final ar = DateFormatterLocale(
+    justNow: 'الآن',
+    minutesAgo: (n) => _ar(n, singular: 'دقيقة', dual: 'دقيقتين', plural: 'دقائق', large: 'دقيقة'),
+    hoursAgo: (n) => _ar(n, singular: 'ساعة', dual: 'ساعتين', plural: 'ساعات', large: 'ساعة'),
+    daysAgo: (n) => _ar(n, singular: 'يوم', dual: 'يومين', plural: 'أيام', large: 'يوم'),
+    weeksAgo: (n) => _ar(n, singular: 'أسبوع', dual: 'أسبوعين', plural: 'أسابيع', large: 'أسبوع'),
+    monthsAgo: (n) => _ar(n, singular: 'شهر', dual: 'شهرين', plural: 'أشهر', large: 'شهر'),
+    yearsAgo: (n) => _ar(n, singular: 'سنة', dual: 'سنتين', plural: 'سنوات', large: 'سنة'),
+  );
 
-  /// Formats as `"15 Jun 2026, 14:30"`.
-  static String formatDateTime(DateTime date) =>
-      '${formatDate(date)}, ${formatTime(date)}';
+  static final ja = DateFormatterLocale(
+    justNow: 'たった今',
+    minutesAgo: (n) => '${n}分前',
+    hoursAgo: (n) => '${n}時間前',
+    daysAgo: (n) => '${n}日前',
+    weeksAgo: (n) => '${n}週間前',
+    monthsAgo: (n) => '${n}ヶ月前',
+    yearsAgo: (n) => '${n}年前',
+  );
+
+  static final es = DateFormatterLocale(
+    justNow: 'ahora mismo',
+    minutesAgo: (n) => 'hace $n min',
+    hoursAgo: (n) => 'hace $n h',
+    daysAgo: (n) => 'hace $n d',
+    weeksAgo: (n) => 'hace $n sem',
+    monthsAgo: (n) => n == 1 ? 'hace 1 mes' : 'hace $n meses',
+    yearsAgo: (n) => n == 1 ? 'hace 1 año' : 'hace $n años',
+  );
+
+  static final fr = DateFormatterLocale(
+    justNow: "à l'instant",
+    minutesAgo: (n) => 'il y a $n min',
+    hoursAgo: (n) => 'il y a $n h',
+    daysAgo: (n) => 'il y a $n j',
+    weeksAgo: (n) => 'il y a $n sem',
+    monthsAgo: (n) => 'il y a $n mois',
+    yearsAgo: (n) => n == 1 ? 'il y a 1 an' : 'il y a $n ans',
+  );
+}
+
+/// Locale-aware date and time formatting helpers.
+///
+/// All methods call `.toLocal()` on the input — pass UTC or local timestamps
+/// interchangeably and the output is always in the device's local time.
+///
+/// For non-English locales call `initializeDateFormatting(locale)` once at
+/// app startup before invoking any formatting method with that locale.
+abstract final class DateFormatter {
+  /// Human-readable relative time string.
+  ///
+  /// Granularity: seconds → minutes → hours → days → weeks → months → years.
+  /// Future dates fall back to [formatDate].
+  /// Uses [locale] for relative labels (default: [DateFormatterLocale.en]).
+  /// Uses [dateLocale] for the absolute date fallback (default: `'en'`).
+  static String relative(
+    DateTime date, {
+    DateTime? now,
+    DateFormatterLocale? locale,
+    String dateLocale = 'en',
+  }) {
+    final l = locale ?? DateFormatterLocale.en;
+    final local = date.toLocal();
+    final ref = (now ?? DateTime.now()).toLocal();
+    final diff = ref.difference(local);
+
+    if (diff.isNegative) return formatDate(date, locale: dateLocale);
+    if (diff.inSeconds < 60) return l.justNow;
+    if (diff.inMinutes < 60) return l.minutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l.hoursAgo(diff.inHours);
+    if (diff.inDays < 7) return l.daysAgo(diff.inDays);
+    if (diff.inDays < 30) return l.weeksAgo(diff.inDays ~/ 7);
+    if (diff.inDays < 365) return l.monthsAgo(diff.inDays ~/ 30);
+    return l.yearsAgo(diff.inDays ~/ 365);
+  }
+
+  /// Locale-aware date string, e.g. `"Jun 16, 2026"` (en), `"16 juin 2026"` (fr).
+  static String formatDate(DateTime date, {String locale = 'en'}) =>
+      DateFormat.yMMMd(locale).format(date.toLocal());
+
+  /// 24-hour time, e.g. `"14:30"`.
+  static String formatTime(DateTime date, {String locale = 'en'}) =>
+      DateFormat.Hm(locale).format(date.toLocal());
+
+  /// Locale-aware date + 24-hour time, e.g. `"Jun 16, 2026 14:30"` (en).
+  static String formatDateTime(DateTime date, {String locale = 'en'}) =>
+      DateFormat.yMMMd(locale).add_Hm().format(date.toLocal());
 }
