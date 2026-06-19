@@ -32,10 +32,10 @@ class AnalyticsCubit extends Cubit<AnalyticsState> {
       emit(AnalyticsState(callLog: [msg, ...state.callLog]));
 
   Future<void> trackEvent() async {
-    final event = AnalyticsEvent('button_tapped', params: {
-      'screen': 'analytics_screen',
-      'button': 'track_event',
-    });
+    final event = AnalyticsEvent(
+      'button_tapped',
+      params: {'screen': 'analytics_screen', 'button': 'track_event'},
+    );
     await _analytics.trackEvent(event);
     _log('trackEvent("${event.name}", params: ${event.params})');
   }
@@ -66,7 +66,10 @@ class AnalyticsCubit extends Cubit<AnalyticsState> {
 
   Future<void> recordCrash() async {
     await _crashReporter.log('Demo breadcrumb from analytics screen');
-    await _crashReporter.recordError(Exception('Demo error'), StackTrace.current);
+    await _crashReporter.recordError(
+      Exception('Demo error'),
+      StackTrace.current,
+    );
     _log('CrashReporter: recordError + log called');
   }
 
@@ -99,8 +102,7 @@ class _DemoCrashReporter implements CrashReporter {
       debugPrint('[CrashReporter] setUser: $userId');
 
   @override
-  Future<void> clearUser() async =>
-      debugPrint('[CrashReporter] clearUser');
+  Future<void> clearUser() async => debugPrint('[CrashReporter] clearUser');
 
   @override
   Future<void> setCustomKey(String key, Object value) async =>

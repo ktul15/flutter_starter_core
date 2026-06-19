@@ -12,10 +12,7 @@ abstract interface class TokenStore {
 
   /// Persists tokens. A `null` [refreshToken] leaves any existing one untouched;
   /// pass an empty string to clear just the refresh token.
-  Future<void> writeTokens({
-    required String accessToken,
-    String? refreshToken,
-  });
+  Future<void> writeTokens({required String accessToken, String? refreshToken});
 
   /// Removes all stored tokens (logout).
   Future<void> clear();

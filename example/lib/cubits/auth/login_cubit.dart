@@ -33,23 +33,29 @@ class LoginCubit extends Cubit<LoginState> {
     final result = await _auth.login(email, password);
     switch (result) {
       case Success(:final data):
-        emit(LoginState(
-          statusText: 'token: ${data.accessToken}',
-          snack: Snack('Logged in', SnackType.success),
-        ));
+        emit(
+          LoginState(
+            statusText: 'token: ${data.accessToken}',
+            snack: Snack('Logged in', SnackType.success),
+          ),
+        );
       case Failure(:final error):
-        emit(LoginState(
-          statusText: 'error: ${error.message}',
-          snack: Snack(error.message, SnackType.error),
-        ));
+        emit(
+          LoginState(
+            statusText: 'error: ${error.message}',
+            snack: Snack(error.message, SnackType.error),
+          ),
+        );
     }
   }
 
   Future<void> logout() async {
     await _auth.logout();
-    emit(LoginState(
-      statusText: 'Logged out — tokens cleared',
-      snack: Snack('Logged out', SnackType.info),
-    ));
+    emit(
+      LoginState(
+        statusText: 'Logged out — tokens cleared',
+        snack: Snack('Logged out', SnackType.info),
+      ),
+    );
   }
 }
