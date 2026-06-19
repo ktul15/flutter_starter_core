@@ -1,70 +1,147 @@
-/// Immutable state for offset/page-based infinite scroll.
+import '../network/api_exception.dart';
+
+/// Immutable state for offset/page-based or cursor-based infinite scroll.
 ///
 /// Framework-agnostic: hold one of these in whatever state solution you use,
-/// call [startLoading] / [appendPage] / [failure] as a fetch progresses, and
-/// drive a list + "load more" footer from the flags.
+/// call [startLoading] / [startRefreshing] / [appendPage] / [failure] as a
+/// fetch progresses, and drive a list + footer from the flags.
+///
+/// **Offset mode** (default):
+/// ```dart
+/// emit(state.startLoading());
+/// final items = await api.getPage(state.page, size: 20);
+/// emit(state.appendPage(items));
+/// ```
+///
+/// **Cursor mode**: always pass `nextCursor` from the API response:
+/// ```dart
+/// emit(state.startLoading());
+/// final res = await api.getPage(after: state.nextCursor);
+/// emit(state.appendPage(res.items, hasMore: res.hasMore, nextCursor: res.next));
+/// ```
 class PaginationState<T> {
   const PaginationState({
     this.items = const [],
     this.page = 0,
+    this.pageSize = 20,
     this.isLoading = false,
+    this.isRefreshing = false,
     this.hasReachedEnd = false,
     this.error,
+    this.nextCursor,
   });
 
   final List<T> items;
 
-  /// Number of pages already loaded (also the next page's zero-based index).
+  /// Pages already loaded (next page index in offset mode).
   final int page;
 
-  /// A fetch is in flight.
+  /// Page size used for end-of-list detection when [appendPage] has no [hasMore].
+  final int pageSize;
+
+  /// A load-more fetch is in flight (footer spinner).
   final bool isLoading;
 
-  /// The last page returned fewer than [pageSize] items — nothing more to load.
+  /// A pull-to-refresh fetch is in flight (top spinner, items still visible).
+  final bool isRefreshing;
+
+  /// No more pages available.
   final bool hasReachedEnd;
 
-  /// Last error message, if the most recent fetch failed.
-  final String? error;
+  /// Error from the most recent failed fetch; cleared on next [startLoading] /
+  /// [startRefreshing] / successful [appendPage].
+  final ApiException? error;
+
+  /// Opaque cursor for the next page (cursor-based APIs only).
+  final String? nextCursor;
+
+  // ── Computed ──────────────────────────────────────────────────────────────
 
   bool get isEmpty => items.isEmpty;
 
-  /// `true` when another page may be requested (not loading, not at end).
-  bool get canLoadMore => !isLoading && !hasReachedEnd;
+  /// Another page can be requested right now.
+  bool get canLoadMore => !isLoading && !isRefreshing && !hasReachedEnd;
 
-  /// Marks a fetch as started, clearing any previous error.
+  /// Items are empty and the first fetch is in flight — show a full skeleton.
+  bool get isInitialLoad => items.isEmpty && isLoading && !isRefreshing;
+
+  /// First fetch failed — no items to show, show an error view.
+  bool get isInitialError =>
+      items.isEmpty && !isLoading && !isRefreshing && error != null;
+
+  /// Nothing loaded yet and no fetch running — show an empty-state illustration.
+  bool get isBlank =>
+      items.isEmpty && !isLoading && !isRefreshing && error == null;
+
+  // ── Transitions ───────────────────────────────────────────────────────────
+
+  /// Marks a load-more fetch as started; clears any previous error.
   PaginationState<T> startLoading() => _copy(isLoading: true, clearError: true);
 
-  /// Appends [newItems]; sets [hasReachedEnd] when the page was short.
+  /// Marks a pull-to-refresh fetch as started; clears any previous error.
+  /// Items remain visible behind the refresh indicator.
+  PaginationState<T> startRefreshing() =>
+      _copy(isRefreshing: true, clearError: true);
+
+  /// Appends [newItems] on load-more; **replaces** items on refresh.
   ///
-  /// [pageSize] is the requested page size used to detect the final page.
-  PaginationState<T> appendPage(List<T> newItems, {required int pageSize}) =>
-      _copy(
-        items: [...items, ...newItems],
-        page: page + 1,
-        isLoading: false,
-        hasReachedEnd: newItems.length < pageSize,
-      );
+  /// End detection (priority order):
+  /// 1. [hasMore] — explicit flag from the API response.
+  /// 2. `newItems.length < pageSize` — fallback for offset APIs that don't
+  ///    return a `hasMore` field.
+  ///
+  /// For cursor-based APIs always pass [nextCursor] from the response; `null`
+  /// signals the cursor is exhausted.
+  PaginationState<T> appendPage(
+    List<T> newItems, {
+    int? pageSize,
+    bool? hasMore,
+    String? nextCursor,
+  }) {
+    final size = pageSize ?? this.pageSize;
+    final reachedEnd =
+        hasMore != null ? !hasMore : newItems.length < size;
+    final mergedItems =
+        isRefreshing ? List<T>.of(newItems) : [...items, ...newItems];
+
+    return PaginationState<T>(
+      items: mergedItems,
+      page: isRefreshing ? 1 : page + 1,
+      pageSize: size,
+      isLoading: false,
+      isRefreshing: false,
+      hasReachedEnd: reachedEnd,
+      nextCursor: nextCursor,
+    );
+  }
 
   /// Records a fetch failure without losing already-loaded [items].
-  PaginationState<T> failure(String message) =>
-      _copy(isLoading: false, error: message);
+  PaginationState<T> failure(ApiException exception) =>
+      _copy(isLoading: false, isRefreshing: false, error: exception);
 
-  /// Resets to an empty first-page state (pull-to-refresh).
-  PaginationState<T> reset() => PaginationState<T>();
+  /// Resets to an empty first-page state; retains [pageSize].
+  PaginationState<T> reset() => PaginationState<T>(pageSize: pageSize);
+
+  // ── Internal ──────────────────────────────────────────────────────────────
 
   PaginationState<T> _copy({
     List<T>? items,
     int? page,
+    int? pageSize,
     bool? isLoading,
+    bool? isRefreshing,
     bool? hasReachedEnd,
-    String? error,
+    ApiException? error,
     bool clearError = false,
   }) =>
       PaginationState<T>(
         items: items ?? this.items,
         page: page ?? this.page,
+        pageSize: pageSize ?? this.pageSize,
         isLoading: isLoading ?? this.isLoading,
+        isRefreshing: isRefreshing ?? this.isRefreshing,
         hasReachedEnd: hasReachedEnd ?? this.hasReachedEnd,
         error: clearError ? null : (error ?? this.error),
+        nextCursor: nextCursor, // cursor only changes via appendPage
       );
 }
