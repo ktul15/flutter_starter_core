@@ -71,6 +71,8 @@ class _PaginationBodyState extends State<_PaginationBody> {
                     _Badge('loading', highlight: true),
                   if (state.hasReachedEnd)
                     _Badge('end reached', highlight: true),
+                  if (state.isRefreshing)
+                    _Badge('refreshing', highlight: true),
                   if (state.error != null)
                     _Badge('error', highlight: true),
                 ],
@@ -82,7 +84,7 @@ class _PaginationBodyState extends State<_PaginationBody> {
               child: RefreshIndicator(
                 onRefresh: () =>
                     ctx.read<PaginationCubit>().refresh(),
-                child: state.isEmpty && !state.isLoading
+                child: state.isBlank
                     ? const EmptyState(
                         title: 'No items',
                         message: 'Pull to refresh',
@@ -142,7 +144,10 @@ class _Footer extends StatelessWidget {
       );
     }
     if (state.error != null) {
-      return ErrorStateView(message: state.error!, onRetry: onLoadMore);
+      return ErrorStateView(
+        message: state.error!.message,
+        onRetry: onLoadMore,
+      );
     }
     return Padding(
       padding: const EdgeInsets.all(16),
