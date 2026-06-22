@@ -238,6 +238,21 @@ void main() {
     });
   });
 
+  group('items immutability', () {
+    test('items list from appendPage is unmodifiable', () {
+      final s = const PaginationState<int>(pageSize: 3).appendPage([1, 2, 3]);
+      expect(() => s.items.add(99), throwsUnsupportedError);
+    });
+
+    test('items list after refresh is unmodifiable', () {
+      final s = const PaginationState<int>()
+          .appendPage([1, 2])
+          .startRefreshing()
+          .appendPage([10, 20]);
+      expect(() => s.items.add(99), throwsUnsupportedError);
+    });
+  });
+
   group('cursor not mutated by non-appendPage transitions', () {
     test('startLoading preserves cursor', () {
       final s = const PaginationState<int>()

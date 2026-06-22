@@ -152,6 +152,12 @@ class AuthService {
     return result;
   }
 
+  // Persists tokens from a successful auth response.
+  // If [AuthResponse.refreshToken] is null (server did not reissue one),
+  // the existing refresh token in the store is preserved unchanged — this is
+  // intentional for flows like OTP verify that return an access token only.
+  // If the server omits the refresh token unexpectedly (a server bug), the old
+  // token will silently remain. Monitor token expiry if this is a concern.
   Future<ApiResult<AuthResponse>> _persist(ApiResult<AuthResponse> result) async {
     final store = _tokenStore;
     if (store != null && result is Success<AuthResponse>) {

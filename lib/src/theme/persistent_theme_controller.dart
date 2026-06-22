@@ -32,7 +32,7 @@ class PersistentThemeModeController extends ThemeModeController {
 
   final AppPreferences _prefs;
 
-  static const _key = 'fsc_theme_mode';
+  static const _key = 'theme_mode';
 
   /// Reads the persisted mode from [prefs] and returns a ready-to-use
   /// controller. Falls back to [ThemeMode.system] if nothing is stored.

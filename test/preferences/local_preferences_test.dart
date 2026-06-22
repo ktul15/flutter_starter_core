@@ -36,12 +36,19 @@ void main() {
       expect(await prefs.getString('del'), isNull);
     });
 
-    test('clear removes everything', () async {
+    test('clear removes only prefixed keys', () async {
       await prefs.setString('a', 'x');
       await prefs.setString('b', 'y');
+      // Simulate a key written directly to SharedPreferences by another lib
+      final sp = await SharedPreferences.getInstance();
+      await sp.setString('other_lib_key', 'safe');
+
       await prefs.clear();
+
       expect(await prefs.getString('a'), isNull);
       expect(await prefs.getString('b'), isNull);
+      // Key from another library must NOT be touched
+      expect(sp.getString('other_lib_key'), 'safe');
     });
 
     test('containsKey', () async {

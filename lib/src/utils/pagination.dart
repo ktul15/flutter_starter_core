@@ -109,8 +109,8 @@ class PaginationState<T> {
     final size = pageSize ?? this.pageSize;
     final reachedEnd =
         hasMore != null ? !hasMore : newItems.length < size;
-    final mergedItems =
-        isRefreshing ? List<T>.of(newItems) : [...items, ...newItems];
+    final mergedItems = List<T>.unmodifiable(
+        isRefreshing ? newItems : [...items, ...newItems]);
 
     return PaginationState<T>(
       items: mergedItems,

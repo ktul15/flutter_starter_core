@@ -10,6 +10,8 @@ abstract final class Validators {
   // Accepts any non-whitespace, non-@ local part so Unicode addresses
   // (e.g. münchen@example.de) pass. Rejects whitespace and multiple @ signs.
   static final RegExp _email = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$');
+  static final RegExp _letter = RegExp(r'[A-Za-z]');
+  static final RegExp _digit = RegExp(r'\d');
 
   /// Fails when null/empty/whitespace-only.
   static Validator required([String message = 'This field is required']) =>
@@ -42,8 +44,8 @@ abstract final class Validators {
       (value) {
         final v = value ?? '';
         final ok = v.length >= minLength &&
-            v.contains(RegExp(r'[A-Za-z]')) &&
-            v.contains(RegExp(r'\d'));
+            v.contains(_letter) &&
+            v.contains(_digit);
         return ok
             ? null
             : (message ??

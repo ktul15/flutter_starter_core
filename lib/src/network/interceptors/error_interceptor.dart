@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../api_exception.dart';
 import '../error_mapper.dart';
 
 /// Converts every [DioException] into one carrying a normalized `ApiException`
@@ -13,7 +14,10 @@ class ErrorInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    // Don't re-map if a prior interceptor already attached an ApiException.
+    if (err.error is ApiException) {
+      handler.next(err);
+      return;
+    }
     final mapped = err.copyWith(error: mapDioException(err));
     handler.next(mapped);
   }

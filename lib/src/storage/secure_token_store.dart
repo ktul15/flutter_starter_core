@@ -72,11 +72,6 @@ class SecureTokenStore implements TokenStore {
   }
 
   @override
-  Future<bool> get hasAccessToken async {
-    try {
-      return (await readAccessToken())?.isNotEmpty ?? false;
-    } on PlatformException {
-      return false;
-    }
-  }
+  Future<bool> get hasAccessToken async =>
+      (await readAccessToken())?.isNotEmpty ?? false;
 }
