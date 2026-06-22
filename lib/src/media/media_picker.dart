@@ -24,14 +24,14 @@ enum MediaSource {
 /// // Image upload — use toMultipartFile() extension from the network module
 /// final image = await picker.pickImage();
 /// if (image != null) {
-///   final form = FormData.fromMap({'avatar': image.toMultipartFile()});
+///   final form = FormData.fromMap({'avatar': await image.toMultipartFile()});
 ///   await client.postFormData('/profile/avatar', data: form);
 /// }
 ///
 /// // Document upload
 /// final doc = await picker.pickFile(allowedExtensions: ['pdf', 'docx']);
 /// if (doc != null) {
-///   final form = FormData.fromMap({'file': doc.toMultipartFile()});
+///   final form = FormData.fromMap({'file': await doc.toMultipartFile()});
 ///   await client.postFormData('/documents', data: form);
 /// }
 /// ```

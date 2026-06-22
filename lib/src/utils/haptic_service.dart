@@ -19,9 +19,9 @@ abstract final class HapticService {
   /// Selection click — toggling or picking from a list.
   static Future<void> selection() => HapticFeedback.selectionClick();
 
-  /// Vibrate — used to signal a success result.
-  static Future<void> success() => HapticFeedback.vibrate();
+  /// Light impact — used to signal a success result.
+  static Future<void> success() => HapticFeedback.lightImpact();
 
-  /// Vibrate — used to signal an error or rejection.
-  static Future<void> error() => HapticFeedback.vibrate();
+  /// Heavy impact — used to signal an error or rejection.
+  static Future<void> error() => HapticFeedback.heavyImpact();
 }

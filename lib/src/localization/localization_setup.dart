@@ -20,7 +20,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 /// MaterialApp(
 ///   supportedLocales: l10n.supportedLocales,
 ///   localizationsDelegates: l10n.allDelegates,
-///   localeResolutionCallback: l10n.resolve,
+///   localeResolutionCallback: l10n.localeResolutionCallback,
 /// );
 /// ```
 class LocalizationConfig {
@@ -28,8 +28,14 @@ class LocalizationConfig {
     required this.supportedLocales,
     this.delegates = const [],
     Locale? fallbackLocale,
-  })  : assert(supportedLocales.isNotEmpty, 'Provide at least one locale'),
-        fallbackLocale = fallbackLocale ?? supportedLocales.first;
+  }) : fallbackLocale = fallbackLocale ??
+            (supportedLocales.isNotEmpty
+                ? supportedLocales.first
+                : const Locale('en')) {
+    if (supportedLocales.isEmpty) {
+      throw ArgumentError('supportedLocales must not be empty');
+    }
+  }
 
   final List<Locale> supportedLocales;
 
@@ -53,10 +59,20 @@ class LocalizationConfig {
         ...delegates,
       ];
 
+  /// Properly-typed callback for `MaterialApp.localeResolutionCallback`.
+  ///
+  /// Flutter's `localeResolutionCallback` typedef requires a non-optional
+  /// `Iterable<Locale>` second parameter. Use this getter instead of tearing
+  /// off [resolve] directly to avoid a compile-time type error.
+  LocaleResolutionCallback get localeResolutionCallback =>
+      (locale, supportedLocales) => resolve(locale, supportedLocales);
+
   /// Resolves a device [locale] to a supported one.
   ///
   /// Prefers an exact language+country match, then a language-only match, then
-  /// [fallbackLocale]. Suitable for `localeResolutionCallback`.
+  /// [fallbackLocale]. The [supported] pool defaults to [supportedLocales] when
+  /// omitted — pass it explicitly only when overriding via
+  /// `localeListResolutionCallback`.
   Locale resolve(Locale? locale, [Iterable<Locale>? supported]) {
     if (locale == null) return fallbackLocale;
     final pool = supported ?? supportedLocales;

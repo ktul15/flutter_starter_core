@@ -37,10 +37,10 @@ void main() {
     expect(config.resolve(const Locale('de')), const Locale('en'));
   });
 
-  test('asserts at least one supported locale', () {
+  test('throws ArgumentError for empty supportedLocales', () {
     expect(
       () => LocalizationConfig(supportedLocales: const []),
-      throwsA(isA<AssertionError>()),
+      throwsA(isA<ArgumentError>()),
     );
   });
 

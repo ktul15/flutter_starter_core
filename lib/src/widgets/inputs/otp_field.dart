@@ -57,12 +57,16 @@ class OtpField extends StatefulWidget {
 class _OtpFieldState extends State<OtpField> {
   late final List<TextEditingController> _controllers;
   late final List<FocusNode> _nodes;
+  // One FocusNode per KeyboardListener — created once, disposed with the widget.
+  late final List<FocusNode> _listenerNodes;
 
   @override
   void initState() {
     super.initState();
     _controllers = List.generate(widget.length, (_) => TextEditingController());
     _nodes = List.generate(widget.length, (_) => FocusNode());
+    _listenerNodes = List.generate(
+        widget.length, (_) => FocusNode(skipTraversal: true));
   }
 
   @override
@@ -73,6 +77,9 @@ class _OtpFieldState extends State<OtpField> {
     for (final n in _nodes) {
       n.dispose();
     }
+    for (final n in _listenerNodes) {
+      n.dispose();
+    }
     super.dispose();
   }
 
@@ -80,7 +87,7 @@ class _OtpFieldState extends State<OtpField> {
 
   void _onChanged(int index, String value) {
     if (value.length > 1) {
-      _distribute(value, from: index);
+      _distribute(value);
       return;
     }
     if (value.isNotEmpty) {
@@ -107,9 +114,9 @@ class _OtpFieldState extends State<OtpField> {
     }
   }
 
-  void _distribute(String pasted, {required int from}) {
-    // Always fill from cell 0 — SMS OTP paste should land in order regardless
-    // of which cell the user tapped.
+  // Always fills from cell 0 — SMS OTP paste lands in order regardless of
+  // which cell the user tapped when the paste event fired.
+  void _distribute(String pasted) {
     final chars = widget.allowAlphanumeric
         ? pasted.replaceAll(RegExp(r'\s'), '') // strip whitespace only
         : pasted.replaceAll(RegExp(r'\D'), ''); // digits only
@@ -141,7 +148,7 @@ class _OtpFieldState extends State<OtpField> {
           child: SizedBox(
             width: 48,
             child: KeyboardListener(
-              focusNode: FocusNode(skipTraversal: true),
+              focusNode: _listenerNodes[i],
               onKeyEvent: (e) => _onKeyEvent(i, e),
               child: TextField(
                 controller: _controllers[i],
