@@ -1,5 +1,94 @@
 # Changelog
 
+## 2.0.0
+
+Multi-round audit: correctness fixes, new API, one breaking change, one removal.
+200 tests, zero analyzer issues.
+
+### Breaking
+
+- **`AppPreferences.containsKey`** returns `Future<bool>` instead of `bool`.
+  Implementations backed by async stores can now honour the contract;
+  `LocalPreferences` wraps the synchronous `SharedPreferences` call in `async`.
+  Update all call sites: `await prefs.containsKey('key')`.
+
+### Removed
+
+- **`AppMessenger`** deleted. It was a global `GlobalKey` singleton — a navigation
+  anti-pattern that made context-free snackbars fragile and hard to test.
+  Use `ScaffoldMessenger.of(context)` (or a `GlobalKey<ScaffoldMessengerState>`
+  you manage yourself) at the app level.
+
+### Added
+
+- **`AuthService.sendOtp` / `verifyOtpOnly`** — OTP-first signup flow (Flow B):
+  trigger an OTP send before the registration form, verify the address without
+  persisting tokens, then call `register`. Override `AuthEndpoints.sendOtp` if
+  the backend uses a different path.
+- **`PaginationState`** — cursor-based pagination, `refresh` state, `hasMore` flag,
+  and `ApiException` error field. Replaces the offset-only v1 state machine.
+- **`AnalyticsEvent.checked()`** factory — throws `ArgumentError` in both debug and
+  release if any param value is not `String`, `num`, or `bool`. Use for
+  dynamically-built param maps; error message names the offending key.
+- **`AppTextField` / `PasswordField`** — `focusNode` and `autofocus` fields added.
+- **`LocalizationConfig.localeResolutionCallback`** getter — correct
+  `LocaleResolutionCallback` return type for direct use in `MaterialApp`.
+
+### Fixed
+
+- **`OtpField`** — FocusNode leak: `KeyboardListener` nodes were never disposed;
+  now created in `initState` and disposed in `dispose`.
+- **`OtpField`** — dead `from` parameter removed from `_distribute`; paste always
+  fills from cell 0.
+- **`HapticService.error()`** — was identical to `success()` (both `lightImpact`);
+  `error()` now uses `heavyImpact`.
+- **`LocalizationConfig`** — `assert` → `ArgumentError` in constructor body so it
+  fires in release builds; `fallbackLocale` safe-defaults to `const Locale('en')`
+  to avoid `StateError` on empty `supportedLocales`.
+- **`ErrorStateView.fromException`** — no longer exposes internal `error.message`
+  (can contain server implementation details); switches on `ApiErrorType` for safe,
+  user-facing copy. Override via the `message` parameter.
+- **`AppVersionInfo`** — semver comparison strips pre-release suffixes
+  (`1.2.3-beta` → `1.2.3`) and build metadata (`2.0.0+42` → `2.0.0`) before
+  comparing, preventing false `updateRequired` results.
+- **`AppVersionChecker._parse`** — replaced opaque `as String` casts with explicit
+  type checks; failure now reports which field is missing or wrong-typed.
+- **`AuthInterceptor`** — `_retry` catch-all added; non-`DioException` errors no
+  longer propagate raw.
+- **`AuthInterceptor`** — if `refreshToken()` throws, `onAuthExpired` and
+  `handler.next` were silently bypassed; now wrapped in `try/catch`.
+- **`AuthService.logout`** — `PlatformException` from `TokenStore.clear()`
+  (Keychain locked) caught so the `ApiResult` contract is always preserved.
+- **`PrimaryButton` / `SecondaryButton`** — `Semantics(label: '$label, loading')`
+  wraps the button during `isLoading` so screen readers announce the state.
+- **`MediaPicker.pickFile`** — Flutter Web: `withData: kIsWeb` loads bytes on web;
+  guard changed to `path == null && bytes == null` so a path-empty/bytes-null
+  `MediaFile` is never returned (would crash `toMultipartFile`).
+- **`ConnectivityChecker._sameResults`** — asymmetric set comparison fixed; old
+  code returned `true` for `[wifi, ethernet]` vs `[wifi, wifi]`. Now uses
+  `setA.length == setB.length && setA.containsAll(setB)`.
+- **`DateFormatter`** — replaced hand-rolled formatting with `intl`; relative-time
+  output is locale-aware and timezone-safe.
+- **`TokenStore.hasAccessToken`** — dead default body removed from
+  `abstract interface class` (unreachable via both `extends` and `implements`).
+- **`AppPreferences.clear`** — doc corrected: `LocalPreferences` scopes the clear
+  to `fsc_`-prefixed keys only; other libraries' keys are untouched.
+- **`PersistentThemeModeController._save`** — dropped `Future` now has `.catchError`
+  so a write failure is logged rather than silently lost.
+- **`RouteGuard`** doc example — `store.hasAccessToken` corrected to
+  `await store.hasAccessToken` (`Future<bool>`, not `bool`).
+- **`RetryInterceptor`** barrel export moved into Module 1 with the other
+  network interceptors.
+
+### Tests
+
+200 tests (up from 148 at 1.0.0). New coverage: `AnalyticsEvent.checked` (5 cases),
+`AuthService.logout` PlatformException absorption, pre-release/build-metadata version
+parsing (3 cases), `ErrorStateView.fromException` safe messages,
+`ConnectivityChecker.onResultChange` de-duplication.
+
+---
+
 ## 1.2.0
 
 Bug fixes, security hardening, and new features across storage, network, theme, media, and push.
