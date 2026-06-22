@@ -17,8 +17,14 @@ abstract final class Validators {
   static Validator required([String message = 'This field is required']) =>
       (value) => (value == null || value.trim().isEmpty) ? message : null;
 
-  /// Fails when present but not a valid email. Empty passes — compose with
-  /// [required] to also require it.
+  /// Fails when present but not a valid email.
+  ///
+  /// **Empty input passes** — `null` and `""` return `null` (valid). This is
+  /// intentional: optional email fields should not error when blank. For a
+  /// required email field, always compose:
+  /// ```dart
+  /// validator: Validators.compose([Validators.required(), Validators.email()])
+  /// ```
   static Validator email([String message = 'Enter a valid email']) =>
       (value) => (value == null || value.isEmpty || _email.hasMatch(value))
           ? null

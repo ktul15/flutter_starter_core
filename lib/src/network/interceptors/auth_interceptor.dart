@@ -99,6 +99,14 @@ class AuthInterceptor extends Interceptor {
         onAuthExpired?.call();
       }
       handler.next(e);
+    } catch (e, s) {
+      handler.next(
+        DioException(
+          requestOptions: request,
+          error: e,
+          stackTrace: s,
+        ),
+      );
     }
   }
 

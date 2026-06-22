@@ -56,7 +56,10 @@ class AppVersionInfo {
   }
 
   static List<int> _parts(String v) {
-    final parts = v.split('.').map((s) => int.tryParse(s) ?? 0).toList();
+    // Strip build metadata (+...) and pre-release label (-...) before parsing
+    // so "1.2.3-beta.1+42" is treated as "1.2.3", not "1.2.0".
+    final clean = v.split('+').first.split('-').first;
+    final parts = clean.split('.').map((s) => int.tryParse(s) ?? 0).toList();
     while (parts.length < 3) {
       parts.add(0);
     }

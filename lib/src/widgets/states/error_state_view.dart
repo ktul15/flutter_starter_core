@@ -15,19 +15,35 @@ class ErrorStateView extends StatelessWidget {
     this.retryLabel = 'Retry',
   });
 
-  /// Builds from an [ApiException], using its `message`.
+  /// Builds from an [ApiException] with a user-safe message derived from its
+  /// [ApiException.type].
+  ///
+  /// [ApiException.message] is intentionally NOT used — it is a log-safe
+  /// technical string that may contain server internals. Pass an explicit
+  /// [message] to override the default user-facing copy for any error type.
   factory ErrorStateView.fromException(
     ApiException error, {
     Key? key,
+    String? message,
     VoidCallback? onRetry,
     String retryLabel = 'Retry',
   }) =>
       ErrorStateView(
         key: key,
-        message: error.message,
+        message: message ?? _safeMessage(error.type),
         onRetry: onRetry,
         retryLabel: retryLabel,
       );
+
+  static String _safeMessage(ApiErrorType type) => switch (type) {
+        ApiErrorType.network => 'Check your connection and try again.',
+        ApiErrorType.timeout => 'Request timed out.',
+        ApiErrorType.unauthorized => 'Session expired. Please sign in again.',
+        ApiErrorType.server => 'Server error. Try again later.',
+        ApiErrorType.validation => 'Some fields are invalid.',
+        ApiErrorType.cancelled => 'Request was cancelled.',
+        _ => 'Something went wrong.',
+      };
 
   final String message;
   final String title;

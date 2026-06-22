@@ -67,16 +67,29 @@ void main() {
     expect(tapped, isTrue);
   });
 
-  testWidgets('ErrorStateView.fromException shows message and retry', (tester) async {
+  testWidgets('ErrorStateView.fromException shows safe type-based message', (tester) async {
     var retried = false;
     await tester.pumpWidget(_wrap(ErrorStateView.fromException(
-      const ApiException(type: ApiErrorType.server, message: 'Server down'),
+      const ApiException(type: ApiErrorType.server, message: 'DB error: connection refused'),
       onRetry: () => retried = true,
     )));
 
-    expect(find.text('Server down'), findsOneWidget);
+    // Raw error.message must NOT appear — it may contain server internals.
+    expect(find.text('DB error: connection refused'), findsNothing);
+    // Safe fallback for ApiErrorType.server:
+    expect(find.text('Server error. Try again later.'), findsOneWidget);
     await tester.tap(find.text('Retry'));
     expect(retried, isTrue);
+  });
+
+  testWidgets('ErrorStateView.fromException message override shows custom copy', (tester) async {
+    await tester.pumpWidget(_wrap(ErrorStateView.fromException(
+      const ApiException(type: ApiErrorType.network, message: 'socket hang up'),
+      message: 'No internet. Check your Wi-Fi.',
+    )));
+
+    expect(find.text('No internet. Check your Wi-Fi.'), findsOneWidget);
+    expect(find.text('socket hang up'), findsNothing);
   });
 
   testWidgets('AppLoader renders message', (tester) async {

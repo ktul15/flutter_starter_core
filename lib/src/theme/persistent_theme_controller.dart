@@ -43,7 +43,14 @@ class PersistentThemeModeController extends ThemeModeController {
     return PersistentThemeModeController._(_fromString(stored), prefs);
   }
 
-  void _save() => _prefs.setString(_key, _toString(value));
+  void _save() {
+    // ValueNotifier listeners are synchronous — can't await. A write failure
+    // is non-fatal: the mode shows correctly this session but reverts to
+    // ThemeMode.system on next cold start.
+    _prefs.setString(_key, _toString(value)).catchError(
+      (Object e) => debugPrint('[flutter_starter_core] theme save failed: $e'),
+    );
+  }
 
   static ThemeMode _fromString(String? s) => switch (s) {
         'light' => ThemeMode.light,

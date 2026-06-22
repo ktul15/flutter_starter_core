@@ -37,14 +37,14 @@ class AppVersionChecker {
   final String _endpoint;
 
   /// Returns the version string from the device's package metadata (e.g. `"1.2.3"`).
-  Future<String> getCurrentVersion() async {
+  Future<String> _getCurrentVersion() async {
     final info = await PackageInfo.fromPlatform();
     return info.version;
   }
 
   /// Fetches the server's version policy, compares to current, returns [AppVersionInfo].
   Future<ApiResult<AppVersionInfo>> check() async {
-    final current = await getCurrentVersion();
+    final current = await _getCurrentVersion();
     return requestRunner(
       () => _client.get(_endpoint),
       (data) => _parse(data as Map<String, dynamic>, current),
