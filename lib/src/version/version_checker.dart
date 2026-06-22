@@ -1,6 +1,7 @@
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../network/api_client.dart';
+import '../network/api_exception.dart';
 import '../network/api_result.dart';
 import '../network/request_runner.dart';
 import 'version_status.dart';
@@ -51,11 +52,27 @@ class AppVersionChecker {
     );
   }
 
-  AppVersionInfo _parse(Map<String, dynamic> json, String currentVersion) =>
-      AppVersionInfo(
-        currentVersion: currentVersion,
-        latestVersion: json['latest_version'] as String,
-        minRequiredVersion: json['min_required_version'] as String,
-        updateUrl: json['update_url'] as String?,
+  AppVersionInfo _parse(Map<String, dynamic> json, String currentVersion) {
+    final latest = json['latest_version'];
+    final minRequired = json['min_required_version'];
+    if (latest is! String) {
+      throw ApiException(
+        type: ApiErrorType.parseFailure,
+        message: 'version response missing or non-String "latest_version": $latest',
       );
+    }
+    if (minRequired is! String) {
+      throw ApiException(
+        type: ApiErrorType.parseFailure,
+        message:
+            'version response missing or non-String "min_required_version": $minRequired',
+      );
+    }
+    return AppVersionInfo(
+      currentVersion: currentVersion,
+      latestVersion: latest,
+      minRequiredVersion: minRequired,
+      updateUrl: json['update_url'] as String?,
+    );
+  }
 }

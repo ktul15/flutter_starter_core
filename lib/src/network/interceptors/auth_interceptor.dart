@@ -84,7 +84,14 @@ class AuthInterceptor extends Interceptor {
       return;
     }
 
-    final refreshed = await _refreshOnce();
+    bool refreshed;
+    try {
+      refreshed = await _refreshOnce();
+    } catch (_) {
+      // refreshToken() threw instead of returning false — treat as failure so
+      // onAuthExpired is still invoked and handler.next receives the original error.
+      refreshed = false;
+    }
     if (!refreshed) {
       onAuthExpired?.call();
       handler.next(err);

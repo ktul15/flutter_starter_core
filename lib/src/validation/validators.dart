@@ -25,6 +25,11 @@ abstract final class Validators {
   /// ```dart
   /// validator: Validators.compose([Validators.required(), Validators.email()])
   /// ```
+  ///
+  /// **Known limitation:** the regex accepts some technically invalid addresses
+  /// such as consecutive dots in the domain (`user@domain..com`). Server-side
+  /// validation is the authoritative check; this validator catches obvious
+  /// user mistakes only.
   static Validator email([String message = 'Enter a valid email']) =>
       (value) => (value == null || value.isEmpty || _email.hasMatch(value))
           ? null

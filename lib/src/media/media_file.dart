@@ -24,6 +24,9 @@ class MediaFile {
   });
 
   /// Absolute path on the device filesystem.
+  ///
+  /// Empty string (`''`) on Flutter Web — the browser provides no filesystem
+  /// path. Use [bytes] for file content on web.
   final String path;
 
   /// Original filename including extension.

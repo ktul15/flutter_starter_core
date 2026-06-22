@@ -97,7 +97,10 @@ class MediaPicker {
     if (result == null || result.files.isEmpty) return null;
     final pf = result.files.single;
     final path = pf.path;
-    if (path == null && !kIsWeb) return null;
+    // Guard covers both non-web (path always null when withData is false) and the
+    // degenerate web case where buffering also fails — returning a MediaFile with
+    // an empty path and null bytes would crash toMultipartFile().
+    if (path == null && pf.bytes == null) return null;
     return MediaFile(
       path: path ?? '',
       name: pf.name,
