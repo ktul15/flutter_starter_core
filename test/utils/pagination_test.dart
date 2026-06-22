@@ -10,6 +10,7 @@ void main() {
       const s = PaginationState<int>();
       expect(s.isEmpty, isTrue);
       expect(s.canLoadMore, isTrue);
+      expect(s.canRetry, isFalse);
       expect(s.isBlank, isTrue);
       expect(s.isInitialLoad, isFalse);
       expect(s.isInitialError, isFalse);
@@ -195,6 +196,45 @@ void main() {
       expect(s.page, 0);
       expect(s.pageSize, 50);
       expect(s.isBlank, isTrue);
+    });
+  });
+
+  group('canLoadMore and canRetry', () {
+    test('canLoadMore false when error is set', () {
+      // pageSize: 3 so appendPage([1,2,3]) is a full page → hasReachedEnd stays false
+      final s = const PaginationState<int>(pageSize: 3)
+          .appendPage([1, 2, 3])
+          .startLoading()
+          .failure(_err());
+      expect(s.canLoadMore, isFalse);
+      expect(s.canRetry, isTrue);
+    });
+
+    test('canRetry false when loading', () {
+      final s = const PaginationState<int>()
+          .failure(_err())
+          .startLoading();
+      expect(s.canRetry, isFalse);
+      expect(s.canLoadMore, isFalse);
+    });
+
+    test('canRetry false when end reached', () {
+      final s = const PaginationState<int>(pageSize: 2)
+          .startLoading()
+          .appendPage([1]) // short page → hasReachedEnd
+          .failure(_err()); // error after end — unusual but possible
+      expect(s.hasReachedEnd, isTrue);
+      expect(s.canRetry, isFalse);
+    });
+
+    test('canLoadMore resumes after error is cleared by startLoading', () {
+      final s = const PaginationState<int>()
+          .failure(_err())
+          .startLoading(); // clears error
+      // still loading, so canLoadMore is false — but error is gone
+      expect(s.error, isNull);
+      expect(s.canLoadMore, isFalse); // loading in-flight
+      expect(s.canRetry, isFalse);
     });
   });
 

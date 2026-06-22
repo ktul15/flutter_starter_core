@@ -21,7 +21,7 @@ class ApiClient {
   ApiClient({
     required String baseUrl,
     List<Interceptor> interceptors = const [],
-    bool enableLogging = true,
+    bool enableLogging = false,
     Duration connectTimeout = const Duration(seconds: 15),
     Duration receiveTimeout = const Duration(seconds: 20),
     Map<String, dynamic>? defaultHeaders,

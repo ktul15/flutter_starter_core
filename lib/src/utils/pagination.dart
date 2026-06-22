@@ -59,8 +59,16 @@ class PaginationState<T> {
 
   bool get isEmpty => items.isEmpty;
 
-  /// Another page can be requested right now.
-  bool get canLoadMore => !isLoading && !isRefreshing && !hasReachedEnd;
+  /// Another page can be requested right now (no in-flight request, no error,
+  /// list not exhausted). Check [canRetry] for the error-retry case.
+  bool get canLoadMore =>
+      !isLoading && !isRefreshing && !hasReachedEnd && error == null;
+
+  /// A failed fetch can be retried (error present, no in-flight request, list
+  /// not exhausted). Distinct from [canLoadMore] so UIs can show a retry button
+  /// instead of a load-more trigger.
+  bool get canRetry =>
+      !isLoading && !isRefreshing && !hasReachedEnd && error != null;
 
   /// Items are empty and the first fetch is in flight — show a full skeleton.
   bool get isInitialLoad => items.isEmpty && isLoading && !isRefreshing;

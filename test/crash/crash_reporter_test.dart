@@ -37,6 +37,9 @@ void main() {
 
   setUp(() {
     savedFlutterHandler = FlutterError.onError;
+    // Replace the test framework's handler with null so attach() doesn't chain
+    // with it — the framework handler re-reports exceptions as test failures.
+    FlutterError.onError = null;
   });
 
   tearDown(() {

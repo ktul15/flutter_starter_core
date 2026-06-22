@@ -122,7 +122,7 @@ class AuthService {
   /// [ApiErrorType.unauthorized] without a network call.
   Future<ApiResult<AuthResponse>> refreshToken() async {
     final refresh = await _tokenStore?.readRefreshToken();
-    if (_tokenStore != null && (refresh == null || refresh.isEmpty)) {
+    if (_tokenStore == null || refresh == null || refresh.isEmpty) {
       return const Failure(
         ApiException(
           type: ApiErrorType.unauthorized,
@@ -134,7 +134,7 @@ class AuthService {
     final result = await requestRunner(
       () => _client.post(
         _endpoints.refresh,
-        data: {if (refresh != null) 'refresh_token': refresh},
+        data: {'refresh_token': refresh},
         options: Options(extra: {AuthInterceptor.skipAuthRefreshKey: true}),
       ),
       _parseAuth,

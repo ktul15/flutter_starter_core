@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'token_store.dart';
@@ -6,6 +7,13 @@ import 'token_store.dart';
 ///
 /// Inject a custom [FlutterSecureStorage] (or platform options) for testing or
 /// to tune accessibility/encryption per platform.
+///
+/// **Exception handling:** Keychain/Keystore operations can throw
+/// [PlatformException] when the secure store is temporarily unavailable (e.g.,
+/// device rebooted but not yet unlocked on iOS). Read operations degrade
+/// gracefully by returning `null` — the caller sees an unauthenticated state.
+/// Write and clear operations rethrow so the caller can decide how to surface
+/// the failure (e.g., logout the user).
 class SecureTokenStore implements TokenStore {
   SecureTokenStore({
     FlutterSecureStorage? storage,
@@ -26,10 +34,22 @@ class SecureTokenStore implements TokenStore {
   final String refreshTokenKey;
 
   @override
-  Future<String?> readAccessToken() => _storage.read(key: accessTokenKey);
+  Future<String?> readAccessToken() async {
+    try {
+      return await _storage.read(key: accessTokenKey);
+    } on PlatformException {
+      return null; // Keychain unavailable (locked) → treat as unauthenticated
+    }
+  }
 
   @override
-  Future<String?> readRefreshToken() => _storage.read(key: refreshTokenKey);
+  Future<String?> readRefreshToken() async {
+    try {
+      return await _storage.read(key: refreshTokenKey);
+    } on PlatformException {
+      return null;
+    }
+  }
 
   @override
   Future<void> writeTokens({
@@ -52,6 +72,11 @@ class SecureTokenStore implements TokenStore {
   }
 
   @override
-  Future<bool> get hasAccessToken async =>
-      (await readAccessToken())?.isNotEmpty ?? false;
+  Future<bool> get hasAccessToken async {
+    try {
+      return (await readAccessToken())?.isNotEmpty ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
 }

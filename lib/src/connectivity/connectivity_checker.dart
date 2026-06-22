@@ -24,12 +24,23 @@ class ConnectivityChecker {
   Future<bool> get isOnline async =>
       _isOnline(await _connectivity.checkConnectivity());
 
-  /// Raw connectivity results from the platform, updated on every change.
+  /// Raw connectivity results from the platform, de-duplicated by content.
   ///
-  /// Use this when you need the transport type (e.g. to distinguish Wi-Fi from
-  /// mobile data) or to implement your own reachability check.
-  Stream<List<ConnectivityResult>> get onResultChange =>
-      _connectivity.onConnectivityChanged;
+  /// Fires when the set of active transports changes. Use this when you need
+  /// transport-type detail (e.g. Wi-Fi vs mobile) or to implement your own
+  /// reachability check on top of transport presence.
+  ///
+  /// Note: `connectivity_plus` may emit duplicate events with identical
+  /// transport lists. This stream deduplicates by comparing the *set* of
+  /// transports, suppressing spurious repeats.
+  Stream<List<ConnectivityResult>> get onResultChange {
+    List<ConnectivityResult>? prev;
+    return _connectivity.onConnectivityChanged.where((results) {
+      if (prev != null && _sameResults(prev!, results)) return false;
+      prev = results;
+      return true;
+    });
+  }
 
   /// Emits `true`/`false` as connectivity changes. De-duplicated so only real
   /// online↔offline transitions are emitted.
@@ -40,4 +51,13 @@ class ConnectivityChecker {
 
   static bool _isOnline(List<ConnectivityResult> results) =>
       results.any((r) => r != ConnectivityResult.none);
+
+  static bool _sameResults(
+    List<ConnectivityResult> a,
+    List<ConnectivityResult> b,
+  ) {
+    if (a.length != b.length) return false;
+    final setA = Set.of(a);
+    return b.every(setA.contains);
+  }
 }

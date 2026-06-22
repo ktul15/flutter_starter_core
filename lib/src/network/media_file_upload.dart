@@ -18,13 +18,18 @@ extension MediaFileUpload on MediaFile {
   ///   await client.postFormData('/profile/avatar', data: form);
   /// }
   /// ```
-  MultipartFile toMultipartFile({String? filename}) {
+  /// Builds a Dio [MultipartFile] ready for [ApiClient.postFormData].
+  ///
+  /// Uses in-memory [bytes] when available (synchronous path); otherwise reads
+  /// from [path] asynchronously via [MultipartFile.fromFile] — avoids blocking
+  /// the isolate on large files when only a path is available.
+  Future<MultipartFile> toMultipartFile({String? filename}) async {
     final fn = filename ?? name;
     final b = bytes;
     if (b != null) {
       return MultipartFile.fromBytes(b, filename: fn, contentType: _mediaType);
     }
-    return MultipartFile.fromFileSync(path, filename: fn, contentType: _mediaType);
+    return MultipartFile.fromFile(path, filename: fn, contentType: _mediaType);
   }
 
   DioMediaType get _mediaType {
