@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// A row of individual digit cells for OTP/PIN entry.
+/// A row of individual cells for OTP/PIN entry.
 ///
-/// - Auto-advances to next cell on digit entry.
+/// - Auto-advances to next cell on entry.
 /// - Auto-retreats to previous cell on backspace when current cell is empty.
-/// - Paste: distributes characters across cells, calls [onCompleted] when full.
+/// - Paste: distributes characters across cells from cell 0, calls [onCompleted]
+///   when full.
 /// - Styled via `Theme.of(context).inputDecorationTheme` — no hardcoded colours.
 ///
 /// ```dart
-/// OtpField(
-///   length: 6,
-///   onCompleted: (otp) => bloc.add(OtpSubmitted(otp)),
-/// )
+/// // Numeric OTP (default)
+/// OtpField(length: 6, onCompleted: (otp) => bloc.add(OtpSubmitted(otp)))
+///
+/// // Alphanumeric code (e.g. "A1B2C3")
+/// OtpField(length: 6, allowAlphanumeric: true, onCompleted: ...)
 /// ```
 class OtpField extends StatefulWidget {
   const OtpField({
@@ -22,10 +24,11 @@ class OtpField extends StatefulWidget {
     this.onChanged,
     this.obscure = false,
     this.autoFocus = true,
+    this.allowAlphanumeric = false,
     this.style,
   }) : assert(length > 0);
 
-  /// Number of OTP digits/cells.
+  /// Number of OTP cells.
   final int length;
 
   /// Called when all cells are filled with the complete OTP string.
@@ -34,13 +37,17 @@ class OtpField extends StatefulWidget {
   /// Called on every keystroke with the current (possibly partial) value.
   final void Function(String current)? onChanged;
 
-  /// Whether to obscure the digits (password-style dots).
+  /// Whether to obscure the input (password-style dots).
   final bool obscure;
 
   /// Whether the first cell requests focus automatically.
   final bool autoFocus;
 
-  /// Text style for each digit. Defaults to `Theme.of(context).textTheme.headlineMedium`.
+  /// When `true`, accepts letters and digits (e.g. `"A1B2C3"`).
+  /// When `false` (default), accepts digits only.
+  final bool allowAlphanumeric;
+
+  /// Text style for each cell. Defaults to `Theme.of(context).textTheme.headlineMedium`.
   final TextStyle? style;
 
   @override
@@ -69,12 +76,10 @@ class _OtpFieldState extends State<OtpField> {
     super.dispose();
   }
 
-  String get _currentValue =>
-      _controllers.map((c) => c.text).join();
+  String get _currentValue => _controllers.map((c) => c.text).join();
 
   void _onChanged(int index, String value) {
     if (value.length > 1) {
-      // Paste: distribute across cells starting from index
       _distribute(value, from: index);
       return;
     }
@@ -103,12 +108,13 @@ class _OtpFieldState extends State<OtpField> {
   }
 
   void _distribute(String pasted, {required int from}) {
-    final digits = pasted.replaceAll(RegExp(r'\D'), '');
-    // Always fill from cell 0 regardless of which cell received the paste.
-    // Users copying an SMS OTP code tap anywhere and expect the full code to
-    // land in order — starting from the focused cell breaks that expectation.
+    // Always fill from cell 0 — SMS OTP paste should land in order regardless
+    // of which cell the user tapped.
+    final chars = widget.allowAlphanumeric
+        ? pasted.replaceAll(RegExp(r'\s'), '') // strip whitespace only
+        : pasted.replaceAll(RegExp(r'\D'), ''); // digits only
     for (var i = 0; i < widget.length; i++) {
-      _controllers[i].text = i < digits.length ? digits[i] : '';
+      _controllers[i].text = i < chars.length ? chars[i] : '';
     }
     final nextEmpty = _controllers.indexWhere((c) => c.text.isEmpty);
     if (nextEmpty == -1) {
@@ -144,9 +150,12 @@ class _OtpFieldState extends State<OtpField> {
                 obscureText: widget.obscure,
                 textAlign: TextAlign.center,
                 style: textStyle,
-                keyboardType: TextInputType.number,
+                keyboardType: widget.allowAlphanumeric
+                    ? TextInputType.visiblePassword
+                    : TextInputType.number,
                 inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
+                  if (!widget.allowAlphanumeric)
+                    FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(widget.length),
                 ],
                 onChanged: (v) => _onChanged(i, v),

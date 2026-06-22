@@ -10,6 +10,7 @@ class AnalyticsEvent {
   /// Event name — use snake_case by convention (e.g. `'button_tapped'`).
   final String name;
 
-  /// Arbitrary metadata attached to the event.
-  final Map<String, Object?> params;
+  /// Event parameters. Values must be primitives (String, num, bool) —
+  /// analytics SDKs reject DateTime, List, or custom objects at runtime.
+  final Map<String, Object> params;
 }

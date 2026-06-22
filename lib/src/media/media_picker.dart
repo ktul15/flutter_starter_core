@@ -21,7 +21,7 @@ enum MediaSource {
 /// ```dart
 /// final picker = MediaPicker();
 ///
-/// // Image upload
+/// // Image upload — use toMultipartFile() extension from the network module
 /// final image = await picker.pickImage();
 /// if (image != null) {
 ///   final form = FormData.fromMap({'avatar': image.toMultipartFile()});
@@ -126,6 +126,9 @@ class MediaPicker {
         'png' => 'image/png',
         'gif' => 'image/gif',
         'webp' => 'image/webp',
+        'heic' => 'image/heic', // iPhone default photo format (iOS 11+)
+        'heif' => 'image/heif',
+        'avif' => 'image/avif',
         'mp4' => 'video/mp4',
         'mov' => 'video/quicktime',
         'mp3' => 'audio/mpeg',

@@ -13,7 +13,7 @@ abstract interface class AnalyticsService {
   /// Identifies the current user. Call after successful login.
   Future<void> setUser({
     required String userId,
-    Map<String, Object?>? properties,
+    Map<String, Object>? properties,
   });
 
   /// Clears the current user identity. Call on logout.
@@ -39,7 +39,7 @@ class NoOpAnalyticsService implements AnalyticsService {
   @override
   Future<void> setUser({
     required String userId,
-    Map<String, Object?>? properties,
+    Map<String, Object>? properties,
   }) async {}
 
   @override

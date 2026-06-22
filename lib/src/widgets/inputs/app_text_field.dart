@@ -15,6 +15,7 @@ class AppTextField extends StatelessWidget {
     this.onSubmitted,
     this.prefixIcon,
     this.enabled = true,
+    this.autovalidateMode = AutovalidateMode.onUserInteraction,
   });
 
   final TextEditingController? controller;
@@ -28,6 +29,14 @@ class AppTextField extends StatelessWidget {
   final IconData? prefixIcon;
   final bool enabled;
 
+  /// When to run [validator]. Defaults to [AutovalidateMode.onUserInteraction]
+  /// (shows errors only after the user has interacted with the field).
+  ///
+  /// Use [AutovalidateMode.always] to show errors immediately (e.g. after a
+  /// failed form submit), or [AutovalidateMode.disabled] to validate manually
+  /// via [FormState.validate].
+  final AutovalidateMode autovalidateMode;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -38,7 +47,7 @@ class AppTextField extends StatelessWidget {
       onChanged: onChanged,
       onFieldSubmitted: onSubmitted,
       enabled: enabled,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode: autovalidateMode,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
