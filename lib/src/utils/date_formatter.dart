@@ -59,12 +59,12 @@ class DateFormatterLocale {
 
   static final ja = DateFormatterLocale(
     justNow: 'たった今',
-    minutesAgo: (n) => '${n}分前',
-    hoursAgo: (n) => '${n}時間前',
-    daysAgo: (n) => '${n}日前',
-    weeksAgo: (n) => '${n}週間前',
-    monthsAgo: (n) => '${n}ヶ月前',
-    yearsAgo: (n) => '${n}年前',
+    minutesAgo: (n) => '$n分前',
+    hoursAgo: (n) => '$n時間前',
+    daysAgo: (n) => '$n日前',
+    weeksAgo: (n) => '$n週間前',
+    monthsAgo: (n) => '$nヶ月前',
+    yearsAgo: (n) => '$n年前',
   );
 
   static final es = DateFormatterLocale(

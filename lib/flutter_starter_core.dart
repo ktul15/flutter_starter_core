@@ -94,6 +94,7 @@ export 'src/permissions/permission_handler.dart';
 // Module 18 — Media Picker
 export 'src/media/media_file.dart';
 export 'src/media/media_picker.dart';
+export 'src/network/media_file_upload.dart'; // MediaFileUpload extension (toMultipartFile)
 
 // Module 19 — OTP Widget
 export 'src/widgets/inputs/otp_field.dart';

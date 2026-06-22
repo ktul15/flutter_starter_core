@@ -7,7 +7,9 @@ typedef Validator = String? Function(String? value);
 /// `FormField.validator` contract. Default messages are English; override via
 /// the `message` parameter for i18n.
 abstract final class Validators {
-  static final RegExp _email = RegExp(r'^[\w.+-]+@([\w-]+\.)+[\w-]{2,}$');
+  // Accepts any non-whitespace, non-@ local part so Unicode addresses
+  // (e.g. münchen@example.de) pass. Rejects whitespace and multiple @ signs.
+  static final RegExp _email = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$');
 
   /// Fails when null/empty/whitespace-only.
   static Validator required([String message = 'This field is required']) =>

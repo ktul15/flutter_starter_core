@@ -5,14 +5,21 @@ import '../loaders/skeleton_box.dart';
 
 /// A cached network image with sensible defaults for placeholder and error states.
 ///
-/// - Placeholder: [SkeletonBox] (already in package) — same size as the image.
+/// - Placeholder: [SkeletonBox] — same size as the image.
 /// - Error: `Icon(Icons.broken_image_outlined)` styled with `colorScheme.error`.
 /// - Optional [borderRadius] wraps the image in a [ClipRRect].
-/// - Backed by `cached_network_image` — disk + memory cache with HTTP headers support.
+/// - Backed by `cached_network_image` (disk + memory cache).
+///
+/// **Headers + cache key:** `cached_network_image` uses the URL as the cache
+/// key by default. If you pass auth [headers] (e.g. a Bearer token), two
+/// different users on the same device will share the cache entry because the
+/// URL is identical. Supply an explicit [cacheKey] (e.g. `'${userId}_${url}'`)
+/// to isolate per-user caches when [headers] carry user-specific credentials.
 ///
 /// ```dart
 /// AppNetworkImage(
 ///   url: user.avatarUrl,
+///   cacheKey: '${userId}_avatar',
 ///   width: 48,
 ///   height: 48,
 ///   borderRadius: BorderRadius.circular(24),
@@ -29,6 +36,7 @@ class AppNetworkImage extends StatelessWidget {
     this.placeholder,
     this.errorWidget,
     this.headers,
+    this.cacheKey,
   });
 
   /// Full URL of the remote image.
@@ -56,8 +64,16 @@ class AppNetworkImage extends StatelessWidget {
   /// Defaults to a centred [Icons.broken_image_outlined] icon.
   final Widget Function(BuildContext, String, Object)? errorWidget;
 
-  /// Additional HTTP headers forwarded to the image request (e.g. auth tokens).
+  /// Additional HTTP headers forwarded to every image request (e.g. auth tokens).
+  ///
+  /// See class-level doc about [cacheKey] when headers carry user credentials.
   final Map<String, String>? headers;
+
+  /// Explicit cache key. Defaults to [url] when null.
+  ///
+  /// Set this when [headers] contain user-specific auth so different users
+  /// do not share a cache entry for the same URL.
+  final String? cacheKey;
 
   @override
   Widget build(BuildContext context) {
@@ -65,17 +81,18 @@ class AppNetworkImage extends StatelessWidget {
 
     Widget image = CachedNetworkImage(
       imageUrl: url,
+      cacheKey: cacheKey,
       width: width,
       height: height,
       fit: fit,
       httpHeaders: headers,
       placeholder: placeholder ??
-          (_, url) => SkeletonBox(
+          (_, __) => SkeletonBox(
                 width: width ?? double.infinity,
                 height: height ?? double.infinity,
               ),
       errorWidget: errorWidget ??
-          (_, url, err) => SizedBox(
+          (_, __, ___) => SizedBox(
                 width: width,
                 height: height,
                 child: Center(

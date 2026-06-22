@@ -134,7 +134,7 @@ class AuthService {
     final result = await requestRunner(
       () => _client.post(
         _endpoints.refresh,
-        data: {'refresh_token': ?refresh},
+        data: {if (refresh != null) 'refresh_token': refresh},
         options: Options(extra: {AuthInterceptor.skipAuthRefreshKey: true}),
       ),
       _parseAuth,
