@@ -7,6 +7,11 @@ enum AppPermission {
   camera,
 
   /// Photo library / gallery access.
+  ///
+  /// **Android note:** maps to `Permission.photos` (requires SDK 33 / Android 13+).
+  /// On Android 12 and below this permission is absent — use [storage] instead
+  /// for broad read access on older devices. A production app should branch on
+  /// the OS version via `device_info_plus`.
   gallery,
 
   /// Microphone for audio recording.
@@ -21,7 +26,13 @@ enum AppPermission {
   /// Push notification display.
   notification,
 
-  /// External storage read/write (Android ≤12).
+  /// Broad external storage read/write.
+  ///
+  /// **Android note:** maps to `Permission.storage`, which is deprecated for
+  /// SDK 33+ (Android 13+). On SDK 33+ the system silently denies this
+  /// permission — use [gallery] (photos), or the scoped media permissions
+  /// (`Permission.videos`, `Permission.audio`) directly via `permission_handler`
+  /// for SDK 33+. Branch on the OS version via `device_info_plus`.
   storage,
 
   /// Device contacts.

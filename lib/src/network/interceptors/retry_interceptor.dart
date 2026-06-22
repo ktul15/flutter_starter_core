@@ -88,6 +88,14 @@ class RetryInterceptor extends Interceptor {
       handler.resolve(response);
     } on DioException catch (e) {
       handler.next(e);
+    } catch (e, s) {
+      handler.next(
+        DioException(
+          requestOptions: err.requestOptions,
+          error: e,
+          stackTrace: s,
+        ),
+      );
     }
   }
 }

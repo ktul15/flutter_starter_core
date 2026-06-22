@@ -51,7 +51,7 @@ class MediaPicker {
       source: _mapSource(source),
       imageQuality: imageQuality,
     );
-    return xFile == null ? null : await _fromXFile(xFile, 'image/jpeg');
+    return xFile == null ? null : await _fromXFile(xFile, _extMime(xFile.name));
   }
 
   /// Picks multiple images from the gallery.
@@ -65,7 +65,7 @@ class MediaPicker {
       limit: limit,
       imageQuality: imageQuality,
     );
-    return Future.wait(files.map((f) => _fromXFile(f, 'image/jpeg')));
+    return Future.wait(files.map((f) => _fromXFile(f, _extMime(f.name))));
   }
 
   /// Picks a video from [source].
@@ -73,7 +73,7 @@ class MediaPicker {
     MediaSource source = MediaSource.gallery,
   }) async {
     final xFile = await _picker.pickVideo(source: _mapSource(source));
-    return xFile == null ? null : await _fromXFile(xFile, 'video/mp4');
+    return xFile == null ? null : await _fromXFile(xFile, _extMime(xFile.name));
   }
 
   /// Picks a single file of any type.
@@ -110,6 +110,13 @@ class MediaPicker {
       name: file.name,
       mimeType: file.mimeType ?? fallbackMime,
     );
+  }
+
+  /// Derives a MIME type from a full filename (e.g. `'photo.heic'`).
+  /// Falls back to `application/octet-stream` for unknown extensions.
+  static String _extMime(String filename) {
+    final dot = filename.lastIndexOf('.');
+    return _mimeFromExtension(dot >= 0 ? filename.substring(dot + 1) : '');
   }
 
   static String _mimeFromExtension(String ext) => switch (ext.toLowerCase()) {

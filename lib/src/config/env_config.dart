@@ -37,10 +37,9 @@ class EnvConfigs {
     required Map<Environment, EnvConfig> configs,
     required this.current,
   }) : _configs = Map.unmodifiable(configs) {
-    assert(
-      _configs.containsKey(current),
-      'No EnvConfig registered for $current',
-    );
+    if (!_configs.containsKey(current)) {
+      throw ArgumentError('No EnvConfig registered for $current');
+    }
   }
 
   final Map<Environment, EnvConfig> _configs;

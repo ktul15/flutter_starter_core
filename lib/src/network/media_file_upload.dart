@@ -9,20 +9,17 @@ import '../media/media_file.dart';
 extension MediaFileUpload on MediaFile {
   /// Builds a Dio [MultipartFile] ready for [ApiClient.postFormData].
   ///
-  /// Uses [bytes] if available, otherwise reads from [path].
+  /// Uses in-memory [bytes] when available; otherwise reads from [path]
+  /// asynchronously via [MultipartFile.fromFile] — avoids blocking the isolate
+  /// on large files.
   ///
   /// ```dart
   /// final file = await picker.pickImage();
   /// if (file != null) {
-  ///   final form = FormData.fromMap({'avatar': file.toMultipartFile()});
+  ///   final form = FormData.fromMap({'avatar': await file.toMultipartFile()});
   ///   await client.postFormData('/profile/avatar', data: form);
   /// }
   /// ```
-  /// Builds a Dio [MultipartFile] ready for [ApiClient.postFormData].
-  ///
-  /// Uses in-memory [bytes] when available (synchronous path); otherwise reads
-  /// from [path] asynchronously via [MultipartFile.fromFile] — avoids blocking
-  /// the isolate on large files when only a path is available.
   Future<MultipartFile> toMultipartFile({String? filename}) async {
     final fn = filename ?? name;
     final b = bytes;

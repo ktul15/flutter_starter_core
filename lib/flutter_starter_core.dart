@@ -13,7 +13,6 @@ library;
 export 'src/network/api_client.dart';
 export 'src/network/api_exception.dart';
 export 'src/network/api_result.dart';
-export 'src/network/error_mapper.dart' show mapDioException;
 export 'src/network/request_runner.dart';
 export 'src/network/interceptors/auth_interceptor.dart';
 export 'src/network/interceptors/error_interceptor.dart';

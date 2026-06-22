@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_starter_core/flutter_starter_core.dart';
+import 'package:flutter_starter_core/src/network/error_mapper.dart';
 
 DioException _response(int status, {dynamic data}) {
   final req = RequestOptions(path: '/x');

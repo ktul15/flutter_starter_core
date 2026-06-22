@@ -10,7 +10,7 @@ import 'dart:typed_data';
 ///
 /// final file = await picker.pickImage();
 /// if (file != null) {
-///   final form = FormData.fromMap({'avatar': file.toMultipartFile()});
+///   final form = FormData.fromMap({'avatar': await file.toMultipartFile()});
 ///   await client.postFormData('/profile/avatar', data: form);
 /// }
 /// ```

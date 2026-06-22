@@ -46,10 +46,10 @@ void main() {
     expect(dev.extra<String>('missing'), isNull);
   });
 
-  test('asserts current must be registered', () {
+  test('throws ArgumentError when current is not registered', () {
     expect(
       () => EnvConfigs(current: Environment.prod, configs: const {}),
-      throwsA(isA<AssertionError>()),
+      throwsA(isA<ArgumentError>()),
     );
   });
 }
