@@ -21,20 +21,27 @@ class PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onPrimary = Theme.of(context).colorScheme.onPrimary;
-    return FilledButton(
-      // Keep button in enabled (non-grey) state while loading so the primary
-      // background is retained and the spinner is visible against it.
-      onPressed: isLoading ? () {} : onPressed,
-      style: FilledButton.styleFrom(
-        minimumSize: const Size.fromHeight(52),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Semantics(
+      // Announce "$label, loading" to assistive tech while the action is in
+      // progress; the empty-lambda onPressed keeps the filled background colour.
+      label: isLoading ? '$label, loading' : null,
+      child: FilledButton(
+        // Keep button in enabled (non-grey) state while loading so the primary
+        // background is retained and the spinner is visible against it.
+        onPressed: isLoading ? () {} : onPressed,
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: isLoading
+            ? SizedBox.square(
+                dimension: 20,
+                child:
+                    CircularProgressIndicator(strokeWidth: 2, color: onPrimary),
+              )
+            : _Label(label: label, icon: icon),
       ),
-      child: isLoading
-          ? SizedBox.square(
-              dimension: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: onPrimary),
-            )
-          : _Label(label: label, icon: icon),
     );
   }
 }
@@ -57,18 +64,23 @@ class SecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
-    return OutlinedButton(
-      onPressed: isLoading ? () {} : onPressed,
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size.fromHeight(52),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Semantics(
+      label: isLoading ? '$label, loading' : null,
+      child: OutlinedButton(
+        onPressed: isLoading ? () {} : onPressed,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: isLoading
+            ? SizedBox.square(
+                dimension: 20,
+                child:
+                    CircularProgressIndicator(strokeWidth: 2, color: primary),
+              )
+            : _Label(label: label, icon: icon),
       ),
-      child: isLoading
-          ? SizedBox.square(
-              dimension: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: primary),
-            )
-          : _Label(label: label, icon: icon),
     );
   }
 }

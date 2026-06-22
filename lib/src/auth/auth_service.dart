@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 
 import '../network/api_client.dart';
 import '../network/api_exception.dart';
@@ -143,12 +144,23 @@ class AuthService {
   }
 
   /// Calls the logout endpoint and clears stored tokens regardless of outcome.
+  ///
+  /// The server session is always terminated when the request succeeds.
+  /// Token clear is best-effort: if the Keychain is temporarily locked
+  /// ([PlatformException]), the tokens remain on-device but the server will
+  /// reject them on the next use.
   Future<ApiResult<void>> logout() async {
     final result = await requestRunner(
       () => _client.post(_endpoints.logout),
       (_) {},
     );
-    await _tokenStore?.clear();
+    try {
+      await _tokenStore?.clear();
+    } on PlatformException {
+      // Storage unavailable — server session is terminated, tokens will be
+      // rejected on next use. Do not let a storage failure break the ApiResult
+      // contract.
+    }
     return result;
   }
 

@@ -6,6 +6,7 @@ class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
     this.controller,
+    this.focusNode,
     this.label,
     this.hint,
     this.validator,
@@ -15,10 +16,15 @@ class AppTextField extends StatelessWidget {
     this.onSubmitted,
     this.prefixIcon,
     this.enabled = true,
+    this.autofocus = false,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
   });
 
   final TextEditingController? controller;
+
+  /// Controls focus for this field. Supply one to advance focus programmatically
+  /// (e.g. `nextNode.requestFocus()` inside [onSubmitted]).
+  final FocusNode? focusNode;
   final String? label;
   final String? hint;
   final String? Function(String?)? validator;
@@ -28,6 +34,9 @@ class AppTextField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final IconData? prefixIcon;
   final bool enabled;
+
+  /// Whether the field requests focus automatically when it appears.
+  final bool autofocus;
 
   /// When to run [validator]. Defaults to [AutovalidateMode.onUserInteraction]
   /// (shows errors only after the user has interacted with the field).
@@ -41,12 +50,14 @@ class AppTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       validator: validator,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       onChanged: onChanged,
       onFieldSubmitted: onSubmitted,
       enabled: enabled,
+      autofocus: autofocus,
       autovalidateMode: autovalidateMode,
       decoration: InputDecoration(
         labelText: label,

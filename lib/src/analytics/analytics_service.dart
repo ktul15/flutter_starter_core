@@ -11,6 +11,9 @@ abstract interface class AnalyticsService {
   Future<void> trackEvent(AnalyticsEvent event);
 
   /// Identifies the current user. Call after successful login.
+  ///
+  /// [properties] values must be `String`, `num`, or `bool` — analytics SDKs
+  /// reject other types at runtime.
   Future<void> setUser({
     required String userId,
     Map<String, Object>? properties,
