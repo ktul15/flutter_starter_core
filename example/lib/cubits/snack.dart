@@ -1,4 +1,4 @@
-import 'package:flutter_starter_core/flutter_starter_core.dart';
+import 'package:flutter/material.dart';
 
 enum SnackType { success, error, info, warning }
 
@@ -13,16 +13,20 @@ class Snack {
   final SnackType type;
 }
 
-/// Route [snack] to the appropriate [AppMessenger] method.
-void dispatchSnack(AppMessenger messenger, Snack snack) {
-  switch (snack.type) {
-    case SnackType.success:
-      messenger.showSuccess(snack.message);
-    case SnackType.error:
-      messenger.showError(snack.message);
-    case SnackType.info:
-      messenger.showInfo(snack.message);
-    case SnackType.warning:
-      messenger.showWarning(snack.message);
-  }
+/// Show [snack] via [ScaffoldMessenger] using [context].
+void dispatchSnack(BuildContext context, Snack snack) {
+  final cs = Theme.of(context).colorScheme;
+  final color = switch (snack.type) {
+    SnackType.success => cs.tertiary,
+    SnackType.error   => cs.error,
+    SnackType.info    => cs.primary,
+    SnackType.warning => cs.secondary,
+  };
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(snack.message, style: TextStyle(color: cs.surface)),
+      backgroundColor: color,
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
 }

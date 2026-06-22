@@ -6,7 +6,6 @@ import 'auth_screen.dart';
 import 'connectivity_screen.dart';
 import 'localization_screen.dart';
 import 'media_screen.dart';
-import 'messenger_screen.dart';
 import 'pagination_screen.dart';
 import 'permissions_screen.dart';
 import 'push_screen.dart';
@@ -18,7 +17,7 @@ import 'validation_screen.dart';
 import 'version_screen.dart';
 import 'widgets_screen.dart';
 
-/// Entry point screen — grid of all 16 modules.
+/// Entry point screen — grid of all modules.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
@@ -27,7 +26,6 @@ class HomeScreen extends StatelessWidget {
     required this.tokenStore,
     required this.client,
     required this.auth,
-    required this.messenger,
     required this.envConfigs,
   });
 
@@ -36,7 +34,6 @@ class HomeScreen extends StatelessWidget {
   final TokenStore tokenStore;
   final ApiClient client;
   final AuthService auth;
-  final AppMessenger messenger;
   final EnvConfigs envConfigs;
 
   @override
@@ -46,7 +43,7 @@ class HomeScreen extends StatelessWidget {
         'Auth',
         'Login · Register · OTP flows A & B',
         Icons.lock_outline,
-        AuthScreen(auth: auth, tokenStore: tokenStore, messenger: messenger),
+        AuthScreen(auth: auth, tokenStore: tokenStore),
       ),
       _Module(
         'Connectivity',
@@ -117,12 +114,6 @@ class HomeScreen extends StatelessWidget {
         'Events · User · Screen · CrashReporter',
         Icons.analytics_outlined,
         const AnalyticsScreen(),
-      ),
-      _Module(
-        'Messenger',
-        'Success · Error · Info · Warning',
-        Icons.notifications_outlined,
-        MessengerScreen(messenger: messenger),
       ),
       _Module(
         'Version',

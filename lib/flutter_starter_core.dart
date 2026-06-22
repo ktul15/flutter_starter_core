@@ -1,6 +1,12 @@
 /// flutter_starter_core — reusable Flutter infrastructure.
 ///
 /// Public API barrel. Import this; everything under `src/` is private.
+///
+/// **Dio types:** this barrel does NOT re-export Dio. Add `dio` to your own
+/// `pubspec.yaml` if you need to reference `FormData`, `MultipartFile`,
+/// `Options`, `CancelToken`, `DioException`, or `Interceptor` by name.
+/// Types returned by package methods (e.g. `ApiClient.dio`) are usable via
+/// type inference without an explicit Dio import.
 library;
 
 // Module 1 — Network Core
@@ -99,24 +105,9 @@ export 'src/network/media_file_upload.dart'; // MediaFileUpload extension (toMul
 // Module 19 — OTP Widget
 export 'src/widgets/inputs/otp_field.dart';
 
-// Module 20 — AppMessenger
-export 'src/messenger/app_messenger.dart';
-
-// Module 21 — Network Image
+// Module 20 — Network Image
 export 'src/widgets/image/app_network_image.dart';
 
-// Module 22 — Version Checker
+// Module 21 — Version Checker
 export 'src/version/version_status.dart';
 export 'src/version/version_checker.dart';
-
-// Re-export Dio types consumers need when wiring the client.
-export 'package:dio/dio.dart'
-    show
-        Dio,
-        FormData,
-        Interceptor,
-        MultipartFile,
-        Options,
-        Response,
-        CancelToken,
-        DioException;

@@ -3,8 +3,6 @@ import 'package:flutter_starter_core/flutter_starter_core.dart';
 
 import 'screens/home_screen.dart';
 
-final _messengerKey = GlobalKey<ScaffoldMessengerState>();
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await LocalPreferences.create();
@@ -29,8 +27,6 @@ class ShowcaseApp extends StatefulWidget {
 }
 
 class _ShowcaseAppState extends State<ShowcaseApp> {
-  late final AppMessenger _messenger = AppMessenger(_messengerKey);
-
   // ── Environment config — swap `current` per build flavor ──────────────────
   late final _envConfigs = EnvConfigs(
     current: Environment.dev,
@@ -84,7 +80,6 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
       builder: (_, mode, child) => MaterialApp(
         title: 'flutter_starter_core showcase',
         debugShowCheckedModeBanner: false,
-        scaffoldMessengerKey: _messengerKey,
         themeMode: mode,
         theme: AppTheme.light(seedColor: Colors.indigo),
         darkTheme: AppTheme.dark(seedColor: Colors.indigo),
@@ -97,7 +92,6 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
           tokenStore: _tokenStore,
           client: _client,
           auth: _auth,
-          messenger: _messenger,
           envConfigs: _envConfigs,
         ),
       ),

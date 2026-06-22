@@ -17,12 +17,10 @@ class AuthScreen extends StatelessWidget {
     super.key,
     required this.auth,
     required this.tokenStore,
-    required this.messenger,
   });
 
   final AuthService auth;
   final TokenStore tokenStore;
-  final AppMessenger messenger;
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +41,15 @@ class AuthScreen extends StatelessWidget {
           children: [
             BlocProvider(
               create: (_) => LoginCubit(auth),
-              child: _LoginTabBody(messenger: messenger),
+              child: const _LoginTabBody(),
             ),
             BlocProvider(
               create: (_) => FlowACubit(auth),
-              child: _FlowATabBody(messenger: messenger),
+              child: const _FlowATabBody(),
             ),
             BlocProvider(
               create: (_) => FlowBCubit(auth),
-              child: _FlowBTabBody(messenger: messenger),
+              child: const _FlowBTabBody(),
             ),
           ],
         ),
@@ -63,8 +61,7 @@ class AuthScreen extends StatelessWidget {
 // ─── Login tab ────────────────────────────────────────────────────────────────
 
 class _LoginTabBody extends StatefulWidget {
-  const _LoginTabBody({required this.messenger});
-  final AppMessenger messenger;
+  const _LoginTabBody();
 
   @override
   State<_LoginTabBody> createState() => _LoginTabBodyState();
@@ -87,7 +84,7 @@ class _LoginTabBodyState extends State<_LoginTabBody> {
     return BlocConsumer<LoginCubit, LoginState>(
       listenWhen: (prev, curr) =>
           curr.snack != null && !identical(curr.snack, prev.snack),
-      listener: (ctx, state) => dispatchSnack(widget.messenger, state.snack!),
+      listener: (ctx, state) => dispatchSnack(ctx, state.snack!),
       builder: (ctx, state) => ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -143,8 +140,7 @@ class _LoginTabBodyState extends State<_LoginTabBody> {
 // ─── Flow A: register → OTP ───────────────────────────────────────────────────
 
 class _FlowATabBody extends StatefulWidget {
-  const _FlowATabBody({required this.messenger});
-  final AppMessenger messenger;
+  const _FlowATabBody();
 
   @override
   State<_FlowATabBody> createState() => _FlowATabBodyState();
@@ -169,7 +165,7 @@ class _FlowATabBodyState extends State<_FlowATabBody> {
     return BlocConsumer<FlowACubit, FlowAState>(
       listenWhen: (prev, curr) =>
           curr.snack != null && !identical(curr.snack, prev.snack),
-      listener: (ctx, state) => dispatchSnack(widget.messenger, state.snack!),
+      listener: (ctx, state) => dispatchSnack(ctx, state.snack!),
       builder: (ctx, state) => ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -263,8 +259,7 @@ class _FlowATabBodyState extends State<_FlowATabBody> {
 // ─── Flow B: sendOtp → verifyOtpOnly → register ───────────────────────────────
 
 class _FlowBTabBody extends StatefulWidget {
-  const _FlowBTabBody({required this.messenger});
-  final AppMessenger messenger;
+  const _FlowBTabBody();
 
   @override
   State<_FlowBTabBody> createState() => _FlowBTabBodyState();
@@ -288,7 +283,7 @@ class _FlowBTabBodyState extends State<_FlowBTabBody> {
     return BlocConsumer<FlowBCubit, FlowBState>(
       listenWhen: (prev, curr) =>
           curr.snack != null && !identical(curr.snack, prev.snack),
-      listener: (ctx, state) => dispatchSnack(widget.messenger, state.snack!),
+      listener: (ctx, state) => dispatchSnack(ctx, state.snack!),
       builder: (ctx, state) => ListView(
         padding: const EdgeInsets.all(24),
         children: [
