@@ -45,7 +45,17 @@ class AppVersionChecker {
 
   /// Fetches the server's version policy, compares to current, returns [AppVersionInfo].
   Future<ApiResult<AppVersionInfo>> check() async {
-    final current = await _getCurrentVersion();
+    final String current;
+    try {
+      current = await _getCurrentVersion();
+    } catch (e) {
+      return Failure(
+        ApiException(
+          type: ApiErrorType.unknown,
+          message: 'Failed to read app version from package metadata: $e',
+        ),
+      );
+    }
     return requestRunner(
       () => _client.get(_endpoint),
       (data) => _parse(data as Map<String, dynamic>, current),
