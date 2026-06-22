@@ -40,6 +40,15 @@ ApiException mapDioException(DioException e) {
   }
 }
 
+/// Maps an HTTP error response to a normalized [ApiException].
+///
+/// Status codes and their [ApiErrorType] mappings:
+/// - 401 → [ApiErrorType.unauthorized]
+/// - 400, 422 → [ApiErrorType.validation]
+/// - 5xx → [ApiErrorType.server]
+/// - **404, 403, and all others** → [ApiErrorType.unknown]; inspect
+///   [ApiException.statusCode] to distinguish (e.g. `e.statusCode == 404`
+///   for "not found", `e.statusCode == 403` for "forbidden").
 ApiException _mapBadResponse(DioException e) {
   final status = e.response?.statusCode;
   final data = e.response?.data;

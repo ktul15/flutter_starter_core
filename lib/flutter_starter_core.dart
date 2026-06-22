@@ -17,6 +17,7 @@ export 'src/network/request_runner.dart';
 export 'src/network/interceptors/auth_interceptor.dart';
 export 'src/network/interceptors/error_interceptor.dart';
 export 'src/network/interceptors/log_interceptor.dart';
+export 'src/network/interceptors/retry_interceptor.dart';
 
 // Module 2 — Storage + Config
 export 'src/storage/token_store.dart';
@@ -68,9 +69,6 @@ export 'src/utils/pagination.dart';
 
 // Module 10 — Routing Guard
 export 'src/routing/route_guard.dart';
-
-// Module 11 — Retry Interceptor
-export 'src/network/interceptors/retry_interceptor.dart';
 
 // Module 12 — Utilities
 export 'src/utils/debouncer.dart';

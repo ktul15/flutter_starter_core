@@ -56,8 +56,11 @@ class ConnectivityChecker {
     List<ConnectivityResult> a,
     List<ConnectivityResult> b,
   ) {
-    if (a.length != b.length) return false;
     final setA = Set.of(a);
-    return b.every(setA.contains);
+    final setB = Set.of(b);
+    // Compare deduplicated sets: equal size + A⊆B implies A==B.
+    // Comparing raw lengths first would be fooled by duplicates (e.g.
+    // [wifi, ethernet] vs [wifi, wifi] — same length, different content).
+    return setA.length == setB.length && setA.containsAll(setB);
   }
 }

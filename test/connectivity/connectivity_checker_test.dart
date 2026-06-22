@@ -27,6 +27,31 @@ void main() {
     expect(await checker.isOnline, isFalse);
   });
 
+  test('onResultChange suppresses duplicate transport lists', () async {
+    final controller = StreamController<List<ConnectivityResult>>();
+    when(() => connectivity.onConnectivityChanged)
+        .thenAnswer((_) => controller.stream);
+
+    final emitted = <List<ConnectivityResult>>[];
+    final sub = checker.onResultChange.listen(emitted.add);
+
+    controller.add([ConnectivityResult.wifi]);
+    controller.add([ConnectivityResult.wifi]); // duplicate — dropped
+    // Order change only — still same set, must be dropped
+    controller.add([ConnectivityResult.ethernet, ConnectivityResult.wifi]);
+    controller.add([ConnectivityResult.wifi, ConnectivityResult.ethernet]);
+    // Genuine change
+    controller.add([ConnectivityResult.mobile]);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(emitted.length, 3);
+    expect(emitted[0], [ConnectivityResult.wifi]);
+    expect(emitted[1], [ConnectivityResult.ethernet, ConnectivityResult.wifi]);
+    expect(emitted[2], [ConnectivityResult.mobile]);
+    await sub.cancel();
+    await controller.close();
+  });
+
   test('onStatusChange maps and de-duplicates transitions', () async {
     final controller = StreamController<List<ConnectivityResult>>();
     when(() => connectivity.onConnectivityChanged)

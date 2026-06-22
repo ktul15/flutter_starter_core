@@ -31,7 +31,7 @@ final class GuardRedirect extends GuardDecision {
 /// ```dart
 /// final guard = RouteGuard(signInLocation: '/login', initialLocation: '/home');
 /// final decision = guard.evaluate(
-///   isAuthenticated: store.hasAccessToken,
+///   isAuthenticated: await store.hasAccessToken,  // Future<bool> — must await
 ///   requiresAuth: route.requiresAuth,
 ///   isAuthRoute: route.isAuthScreen,
 /// );
