@@ -18,6 +18,5 @@ abstract interface class TokenStore {
   Future<void> clear();
 
   /// Convenience: `true` when an access token is present.
-  Future<bool> get hasAccessToken async =>
-      (await readAccessToken())?.isNotEmpty ?? false;
+  Future<bool> get hasAccessToken;
 }

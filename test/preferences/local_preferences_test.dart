@@ -52,9 +52,9 @@ void main() {
     });
 
     test('containsKey', () async {
-      expect(prefs.containsKey('new'), isFalse);
+      expect(await prefs.containsKey('new'), isFalse);
       await prefs.setString('new', '1');
-      expect(prefs.containsKey('new'), isTrue);
+      expect(await prefs.containsKey('new'), isTrue);
     });
   });
 }

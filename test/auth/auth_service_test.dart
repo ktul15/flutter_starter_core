@@ -141,6 +141,17 @@ void main() {
     expect(await store.readAccessToken(), isNull);
   });
 
+  test('logout absorbs PlatformException from token clear — ApiResult contract preserved', () async {
+    final throwingStore =
+        FakeTokenStore(accessToken: 'AT', throwOnClear: true);
+    final auth = AuthService(client: client, tokenStore: throwingStore);
+    stubPost(() async => _ok(null));
+
+    // Must not throw — PlatformException must be absorbed inside logout().
+    final result = await auth.logout();
+    expect(result.isSuccess, isTrue);
+  });
+
   group('refreshToken', () {
     test('fails fast without a network call when no refresh token', () async {
       final result = await auth.refreshToken();

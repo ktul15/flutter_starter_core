@@ -67,5 +67,5 @@ class LocalPreferences implements AppPreferences {
   }
 
   @override
-  bool containsKey(String key) => _prefs.containsKey(_k(key));
+  Future<bool> containsKey(String key) async => _prefs.containsKey(_k(key));
 }

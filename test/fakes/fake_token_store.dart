@@ -1,9 +1,13 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_starter_core/flutter_starter_core.dart';
 
 /// In-memory [TokenStore] for tests. No platform channels.
 class FakeTokenStore implements TokenStore {
-  FakeTokenStore({String? accessToken, String? refreshToken})
-      : _access = accessToken,
+  FakeTokenStore({
+    String? accessToken,
+    String? refreshToken,
+    this.throwOnClear = false,
+  })  : _access = accessToken,
         _refresh = refreshToken;
 
   String? _access;
@@ -11,6 +15,9 @@ class FakeTokenStore implements TokenStore {
 
   int writeCount = 0;
   int clearCount = 0;
+
+  /// When `true`, [clear] throws [PlatformException] (simulates locked Keychain).
+  final bool throwOnClear;
 
   @override
   Future<String?> readAccessToken() async => _access;
@@ -32,6 +39,10 @@ class FakeTokenStore implements TokenStore {
 
   @override
   Future<void> clear() async {
+    if (throwOnClear) {
+      throw PlatformException(
+          code: 'secure_storage_locked', message: 'Keychain unavailable');
+    }
     clearCount++;
     _access = null;
     _refresh = null;

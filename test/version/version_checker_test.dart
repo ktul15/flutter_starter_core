@@ -57,5 +57,34 @@ void main() {
       );
       expect(info.status, VersionStatus.updateRequired);
     });
+
+    test('pre-release suffix stripped — beta equals release', () {
+      // "1.2.3-beta" must compare as "1.2.3", not as "1.2.0"
+      const info = AppVersionInfo(
+        currentVersion: '2.0.0-beta.1',
+        latestVersion: '2.0.0',
+        minRequiredVersion: '1.0.0',
+      );
+      expect(info.status, isNot(VersionStatus.updateRequired));
+    });
+
+    test('build metadata stripped — 2.0.0+42 equals 2.0.0', () {
+      const info = AppVersionInfo(
+        currentVersion: '2.0.0+42',
+        latestVersion: '2.0.0',
+        minRequiredVersion: '1.0.0',
+      );
+      expect(info.status, VersionStatus.upToDate);
+    });
+
+    test('pre-release below min triggers updateRequired', () {
+      // "1.0.0-rc" compares as "1.0.0" which is < minRequired "1.0.1"
+      const info = AppVersionInfo(
+        currentVersion: '1.0.0-rc',
+        latestVersion: '2.0.0',
+        minRequiredVersion: '1.0.1',
+      );
+      expect(info.status, VersionStatus.updateRequired);
+    });
   });
 }

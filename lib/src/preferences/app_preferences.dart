@@ -25,9 +25,16 @@ abstract interface class AppPreferences {
   /// Removes the value at [key]. No-op if absent.
   Future<void> remove(String key);
 
-  /// Clears all stored values.
+  /// Removes all values accessible through this instance.
+  ///
+  /// Implementations backed by a shared namespace (e.g. `SharedPreferences`)
+  /// should scope the clear to only the keys they own — other libraries' keys
+  /// must not be affected. See [LocalPreferences] for the reference behavior.
   Future<void> clear();
 
   /// Returns `true` if a value exists at [key].
-  bool containsKey(String key);
+  ///
+  /// Async so implementations backed by non-in-memory stores can honour the
+  /// contract without blocking.
+  Future<bool> containsKey(String key);
 }

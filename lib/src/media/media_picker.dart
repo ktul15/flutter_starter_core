@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 
 import 'media_file.dart';
@@ -81,20 +82,27 @@ class MediaPicker {
   /// Pass [allowedExtensions] to restrict the picker (e.g. `['pdf', 'docx']`).
   /// When `null`, all file types are shown.
   /// Returns `null` if the user cancels.
+  ///
+  /// **Flutter Web:** the filesystem path is unavailable on web. This method
+  /// loads the file into memory (`bytes`) instead and sets `path` to `''`.
+  /// Use [MediaFile.bytes] for the file content on web.
   Future<MediaFile?> pickFile({List<String>? allowedExtensions}) async {
     final result = await FilePicker.platform.pickFiles(
       type: allowedExtensions != null ? FileType.custom : FileType.any,
       allowedExtensions: allowedExtensions,
-      withData: false,
+      // On web there is no filesystem path — load bytes so the caller gets a
+      // usable MediaFile. On other platforms skip in-memory buffering.
+      withData: kIsWeb,
     );
     if (result == null || result.files.isEmpty) return null;
     final pf = result.files.single;
     final path = pf.path;
-    if (path == null) return null;
+    if (path == null && !kIsWeb) return null;
     return MediaFile(
-      path: path,
+      path: path ?? '',
       name: pf.name,
       mimeType: _mimeFromExtension(pf.extension ?? ''),
+      bytes: pf.bytes,
       size: pf.size,
     );
   }
