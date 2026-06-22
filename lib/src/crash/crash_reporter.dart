@@ -47,13 +47,22 @@ abstract interface class CrashReporter {
 /// }
 /// ```
 abstract final class CrashReporterWiring {
-  /// Routes all unhandled Flutter widget-tree errors and Dart zone errors to
-  /// [reporter]. Existing handlers are replaced.
+  /// Routes all unhandled Flutter and Dart errors to [reporter].
+  ///
+  /// **Chains** existing handlers rather than replacing them — calling [attach]
+  /// multiple times (or after a test framework installs its own handler) does
+  /// not discard earlier error hooks.
   static void attach(CrashReporter reporter) {
-    FlutterError.onError = reporter.recordFlutterError;
+    final prevFlutter = FlutterError.onError;
+    FlutterError.onError = (details) {
+      reporter.recordFlutterError(details);
+      prevFlutter?.call(details);
+    };
+
+    final prevPlatform = PlatformDispatcher.instance.onError;
     PlatformDispatcher.instance.onError = (error, stack) {
       reporter.recordError(error, stack, fatal: true);
-      return true;
+      return prevPlatform?.call(error, stack) ?? true;
     };
   }
 }

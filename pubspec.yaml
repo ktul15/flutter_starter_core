@@ -5,8 +5,8 @@ repository: https://github.com/ktul15/flutter_starter_core
 homepage: https://github.com/ktul15/flutter_starter_core
 
 environment:
-  sdk: ^3.11.1
-  flutter: ">=1.17.0"
+  sdk: ^3.0.0
+  flutter: ">=3.10.0"
 
 dependencies:
   cached_network_image: ^3.4.0

@@ -2,25 +2,36 @@ import 'package:flutter/material.dart';
 
 /// Shows styled snackbars from anywhere without a [BuildContext].
 ///
-/// Wire the [key] to [MaterialApp.scaffoldMessengerKey] once, then inject
-/// [AppMessenger] wherever notifications are needed.
+/// **Wiring (required):** pass [key] to [MaterialApp.scaffoldMessengerKey].
+/// Forgetting this causes silent no-ops in release and a clear assertion error
+/// in debug — check the assert message if snackbars are not appearing.
 ///
 /// ```dart
 /// final messengerKey = GlobalKey<ScaffoldMessengerState>();
 /// final messenger = AppMessenger(messengerKey);
 ///
 /// MaterialApp(
-///   scaffoldMessengerKey: messengerKey,
+///   scaffoldMessengerKey: messengerKey,   // ← required
 ///   ...
 /// );
 ///
-/// // Later, from any service or bloc:
+/// // From a BLoC or service:
 /// messenger.showError('Something went wrong');
 /// ```
 class AppMessenger {
   AppMessenger(this._key);
 
   final GlobalKey<ScaffoldMessengerState> _key;
+
+  ScaffoldMessengerState? get _messenger => _key.currentState;
+
+  void _assertWired() {
+    assert(
+      _key.currentState != null,
+      'AppMessenger: scaffoldMessengerKey is not attached to MaterialApp.\n'
+      'Pass the same GlobalKey to MaterialApp.scaffoldMessengerKey.',
+    );
+  }
 
   /// Shows a green success snackbar.
   void showSuccess(String message, {Duration? duration}) =>
@@ -39,15 +50,19 @@ class AppMessenger {
       _show(message, _SnackType.warning, duration: duration);
 
   /// Shows a fully custom [SnackBar].
-  void showSnackBar(SnackBar snackBar) =>
-      _messenger?.showSnackBar(snackBar);
+  void showSnackBar(SnackBar snackBar) {
+    _assertWired();
+    _messenger?.showSnackBar(snackBar);
+  }
 
   /// Hides the currently visible snackbar immediately.
-  void hideCurrentSnackBar() => _messenger?.hideCurrentSnackBar();
-
-  ScaffoldMessengerState? get _messenger => _key.currentState;
+  void hideCurrentSnackBar() {
+    _assertWired();
+    _messenger?.hideCurrentSnackBar();
+  }
 
   void _show(String message, _SnackType type, {Duration? duration}) {
+    _assertWired();
     final cs = _messenger?.context != null
         ? Theme.of(_messenger!.context).colorScheme
         : null;

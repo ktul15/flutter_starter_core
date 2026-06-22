@@ -1,11 +1,19 @@
 import 'dart:typed_data';
 
-import 'package:dio/dio.dart';
-
 /// Normalised file selected by [MediaPicker].
 ///
-/// Bridges platform file pickers to [ApiClient.postFormData] via
-/// [toMultipartFile], so upload code is provider-agnostic.
+/// A pure data class — no HTTP client dependency. To build a Dio [MultipartFile]
+/// for upload, use the `toMultipartFile()` extension from the network module:
+///
+/// ```dart
+/// import 'package:flutter_starter_core/flutter_starter_core.dart';
+///
+/// final file = await picker.pickImage();
+/// if (file != null) {
+///   final form = FormData.fromMap({'avatar': file.toMultipartFile()});
+///   await client.postFormData('/profile/avatar', data: form);
+/// }
+/// ```
 class MediaFile {
   const MediaFile({
     required this.path,
@@ -29,34 +37,4 @@ class MediaFile {
 
   /// File size in bytes, when available.
   final int? size;
-
-  /// Builds a Dio [MultipartFile] ready for [ApiClient.postFormData].
-  ///
-  /// Uses [bytes] if available, otherwise reads from [path].
-  ///
-  /// ```dart
-  /// final file = await MediaPicker().pickImage();
-  /// if (file != null) {
-  ///   final form = FormData.fromMap({
-  ///     'avatar': file.toMultipartFile(),
-  ///   });
-  ///   await client.postFormData('/profile/avatar', data: form);
-  /// }
-  /// ```
-  MultipartFile toMultipartFile({String? filename}) {
-    final fn = filename ?? name;
-    final bytes = this.bytes;
-    if (bytes != null) {
-      return MultipartFile.fromBytes(bytes, filename: fn, contentType: _mediaType);
-    }
-    return MultipartFile.fromFileSync(path, filename: fn, contentType: _mediaType);
-  }
-
-  // Parses type/subtype from mimeType for DioMediaType.
-  DioMediaType get _mediaType {
-    final parts = mimeType.split('/');
-    return parts.length == 2
-        ? DioMediaType(parts[0], parts[1])
-        : DioMediaType('application', 'octet-stream');
-  }
 }
