@@ -8,6 +8,19 @@ import 'version_status.dart';
 
 /// Fetches the server's version policy and compares it against the running app.
 ///
+/// Version data is server-controlled, not fetched directly from the App Store or
+/// Play Store. This is intentional:
+/// - `min_required_version` (force-update threshold) can only come from your own
+///   server — the stores have no concept of "this version is blocked".
+/// - The server can flip a force-update immediately (e.g. a security incident)
+///   without waiting for store API propagation.
+/// - A single endpoint works cross-platform (iOS + Android).
+///
+/// **Operational requirement:** every time a new build ships to the stores, the
+/// backend endpoint must also be updated with the new `latest_version`. If it
+/// falls out of sync, [VersionStatus.updateAvailable] will never be returned
+/// even when a newer version exists in the store.
+///
 /// The [endpoint] must return JSON matching [AppVersionInfo]:
 /// ```json
 /// {
@@ -16,8 +29,8 @@ import 'version_status.dart';
 ///   "update_url": "https://play.google.com/..."
 /// }
 /// ```
-/// The `current_version` is read from the app's package metadata via
-/// `package_info_plus`.
+/// `current_version` is read locally via `package_info_plus` — do not include
+/// it in the server response.
 ///
 /// ```dart
 /// final checker = AppVersionChecker(client: apiClient, endpoint: '/app/version');
@@ -31,8 +44,8 @@ import 'version_status.dart';
 /// ```
 class AppVersionChecker {
   AppVersionChecker({required ApiClient client, required String endpoint})
-    : _client = client,
-      _endpoint = endpoint;
+      : _client = client,
+        _endpoint = endpoint;
 
   final ApiClient _client;
   final String _endpoint;
@@ -68,7 +81,8 @@ class AppVersionChecker {
     if (latest is! String) {
       throw ApiException(
         type: ApiErrorType.parseFailure,
-        message: 'version response missing or non-String "latest_version": $latest',
+        message:
+            'version response missing or non-String "latest_version": $latest',
       );
     }
     if (minRequired is! String) {
