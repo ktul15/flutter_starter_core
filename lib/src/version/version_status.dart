@@ -1,3 +1,5 @@
+import '../network/api_exception.dart';
+
 /// Result of comparing the running app version against the server's version policy.
 enum VersionStatus {
   /// App is current — no action needed.
@@ -32,6 +34,43 @@ class AppVersionInfo {
 
   /// Deep-link or store URL for the update, if provided by the server.
   final String? updateUrl;
+
+  /// Constructs an [AppVersionInfo] from a server JSON response.
+  ///
+  /// [currentVersion] is the version installed on the device — typically from
+  /// `PackageInfo.fromPlatform().version`. Only the server-supplied fields are
+  /// read from [json]; `current_version` must NOT appear in the response.
+  ///
+  /// Throws [ApiException] with [ApiErrorType.parseFailure] if required fields
+  /// are absent or not strings.
+  factory AppVersionInfo.fromJson(
+    Map<String, dynamic> json,
+    String currentVersion,
+  ) {
+    final latest = json['latest_version'];
+    final minRequired = json['min_required_version'];
+    if (latest is! String) {
+      throw ApiException(
+        type: ApiErrorType.parseFailure,
+        message:
+            'version response missing or non-String "latest_version": $latest',
+      );
+    }
+    if (minRequired is! String) {
+      throw ApiException(
+        type: ApiErrorType.parseFailure,
+        message:
+            'version response missing or non-String "min_required_version":'
+            ' $minRequired',
+      );
+    }
+    return AppVersionInfo(
+      currentVersion: currentVersion,
+      latestVersion: latest,
+      minRequiredVersion: minRequired,
+      updateUrl: json['update_url'] as String?,
+    );
+  }
 
   /// Computes the [VersionStatus] by comparing semver strings.
   VersionStatus get status {

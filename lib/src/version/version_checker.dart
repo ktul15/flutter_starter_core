@@ -21,7 +21,7 @@ import 'version_status.dart';
 /// falls out of sync, [VersionStatus.updateAvailable] will never be returned
 /// even when a newer version exists in the store.
 ///
-/// The [endpoint] must return JSON matching [AppVersionInfo]:
+/// The [endpoint] must return JSON matching [AppVersionInfo.fromJson]:
 /// ```json
 /// {
 ///   "latest_version": "2.0.0",
@@ -29,8 +29,12 @@ import 'version_status.dart';
 ///   "update_url": "https://play.google.com/..."
 /// }
 /// ```
-/// `current_version` is read locally via `package_info_plus` — do not include
-/// it in the server response.
+/// `current_version` is read locally — do not include it in the server response.
+///
+/// Results are cached for [cacheDuration] (default 4 hours) so repeated calls
+/// within one app session do not hit the network. Pass `forceRefresh: true` to
+/// [check] to bypass the cache (e.g. after the user manually taps "check for
+/// updates").
 ///
 /// ```dart
 /// final checker = AppVersionChecker(client: apiClient, endpoint: '/app/version');
@@ -43,24 +47,54 @@ import 'version_status.dart';
 /// );
 /// ```
 class AppVersionChecker {
-  AppVersionChecker({required ApiClient client, required String endpoint})
-      : _client = client,
-        _endpoint = endpoint;
+  /// Creates a checker.
+  ///
+  /// [versionProvider] overrides how the current app version is read — defaults
+  /// to `PackageInfo.fromPlatform().version`. Override in tests to avoid the
+  /// platform channel:
+  ///
+  /// ```dart
+  /// AppVersionChecker(
+  ///   client: mockClient,
+  ///   endpoint: '/app/version',
+  ///   versionProvider: () async => '1.0.0',
+  /// )
+  /// ```
+  AppVersionChecker({
+    required ApiClient client,
+    required String endpoint,
+    this.cacheDuration = const Duration(hours: 4),
+    Future<String> Function()? versionProvider,
+  })  : _client = client,
+        _endpoint = endpoint,
+        _versionProvider = versionProvider ?? _defaultVersionProvider;
 
   final ApiClient _client;
   final String _endpoint;
+  final Future<String> Function() _versionProvider;
 
-  /// Returns the version string from the device's package metadata (e.g. `"1.2.3"`).
-  Future<String> _getCurrentVersion() async {
+  /// How long a successful [check] result is reused before the next call hits
+  /// the network. Defaults to 4 hours. Set to [Duration.zero] to disable.
+  final Duration cacheDuration;
+
+  AppVersionInfo? _cached;
+  DateTime? _cachedAt;
+
+  static Future<String> _defaultVersionProvider() async {
     final info = await PackageInfo.fromPlatform();
     return info.version;
   }
 
-  /// Fetches the server's version policy, compares to current, returns [AppVersionInfo].
-  Future<ApiResult<AppVersionInfo>> check() async {
+  /// Fetches (or returns cached) version policy, compares to current app version.
+  ///
+  /// Cached when [cacheDuration] > 0 and the last successful fetch was within
+  /// that window. Pass [forceRefresh] to bypass the cache unconditionally.
+  Future<ApiResult<AppVersionInfo>> check({bool forceRefresh = false}) async {
+    if (!forceRefresh && _isCacheValid()) return Success(_cached!);
+
     final String current;
     try {
-      current = await _getCurrentVersion();
+      current = await _versionProvider();
     } catch (e) {
       return Failure(
         ApiException(
@@ -69,34 +103,28 @@ class AppVersionChecker {
         ),
       );
     }
-    return requestRunner(
+
+    final result = await requestRunner(
       () => _client.get(_endpoint),
-      (data) => _parse(data as Map<String, dynamic>, current),
+      (data) => AppVersionInfo.fromJson(data as Map<String, dynamic>, current),
     );
+
+    if (result is Success<AppVersionInfo>) {
+      _cached = result.data;
+      _cachedAt = DateTime.now();
+    }
+
+    return result;
   }
 
-  AppVersionInfo _parse(Map<String, dynamic> json, String currentVersion) {
-    final latest = json['latest_version'];
-    final minRequired = json['min_required_version'];
-    if (latest is! String) {
-      throw ApiException(
-        type: ApiErrorType.parseFailure,
-        message:
-            'version response missing or non-String "latest_version": $latest',
-      );
-    }
-    if (minRequired is! String) {
-      throw ApiException(
-        type: ApiErrorType.parseFailure,
-        message:
-            'version response missing or non-String "min_required_version": $minRequired',
-      );
-    }
-    return AppVersionInfo(
-      currentVersion: currentVersion,
-      latestVersion: latest,
-      minRequiredVersion: minRequired,
-      updateUrl: json['update_url'] as String?,
-    );
+  /// Discards any cached result so the next [check] call hits the network.
+  void invalidateCache() {
+    _cached = null;
+    _cachedAt = null;
+  }
+
+  bool _isCacheValid() {
+    if (_cached == null || _cachedAt == null) return false;
+    return DateTime.now().difference(_cachedAt!) < cacheDuration;
   }
 }
