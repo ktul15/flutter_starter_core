@@ -91,29 +91,6 @@ class _WidgetsBodyState extends State<_WidgetsBody> {
 
             const Divider(height: 32),
 
-            // ── OtpField ────────────────────────────────────────────────────
-            _Section('OtpField'),
-            Center(
-              child: OtpField(
-                length: 6,
-                autoFocus: false,
-                onCompleted: (otp) =>
-                    ctx.read<WidgetsCubit>().updateOtp(otp),
-                onChanged: (v) =>
-                    ctx.read<WidgetsCubit>().updateOtp(v),
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (state.otpValue.isNotEmpty)
-              Center(
-                child: Text(
-                  'Current: ${state.otpValue}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-
-            const Divider(height: 32),
-
             // ── AppLoader ───────────────────────────────────────────────────
             _Section('AppLoader'),
             const AppLoader(),
@@ -142,37 +119,6 @@ class _WidgetsBodyState extends State<_WidgetsBody> {
                       SizedBox(height: 6),
                       SkeletonBox(height: 10, width: 100),
                     ],
-                  ),
-                ),
-              ],
-            ),
-
-            const Divider(height: 32),
-
-            // ── AppNetworkImage ─────────────────────────────────────────────
-            _Section('AppNetworkImage'),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                AppNetworkImage(
-                  url: 'https://picsum.photos/seed/flutter/200/200',
-                  width: 100,
-                  height: 100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                AppNetworkImage(
-                  url: 'https://picsum.photos/seed/dart/200/200',
-                  width: 100,
-                  height: 100,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                AppNetworkImage(
-                  url: 'https://invalid.url.example.com/image.png',
-                  width: 100,
-                  height: 100,
-                  errorWidget: (ctx, url, err) => const Icon(
-                    Icons.broken_image_outlined,
-                    size: 40,
                   ),
                 ),
               ],

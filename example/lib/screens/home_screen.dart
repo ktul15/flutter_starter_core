@@ -1,28 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter_core/flutter_starter_core.dart';
 
-import 'analytics_screen.dart';
 import 'auth_screen.dart';
-import 'connectivity_screen.dart';
-import 'localization_screen.dart';
-import 'media_screen.dart';
 import 'pagination_screen.dart';
-import 'permissions_screen.dart';
-import 'push_screen.dart';
-import 'route_guard_screen.dart';
 import 'storage_screen.dart';
-import 'theme_screen.dart';
-import 'utils_screen.dart';
 import 'validation_screen.dart';
-import 'version_screen.dart';
 import 'widgets_screen.dart';
 
-/// Entry point screen — grid of all modules.
+/// Entry point — grid of all active modules.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
     required this.prefs,
-    required this.themeController,
     required this.tokenStore,
     required this.client,
     required this.auth,
@@ -30,7 +19,6 @@ class HomeScreen extends StatelessWidget {
   });
 
   final LocalPreferences prefs;
-  final PersistentThemeModeController themeController;
   final TokenStore tokenStore;
   final ApiClient client;
   final AuthService auth;
@@ -46,12 +34,6 @@ class HomeScreen extends StatelessWidget {
         AuthScreen(auth: auth, tokenStore: tokenStore),
       ),
       _Module(
-        'Connectivity',
-        'Live network status stream',
-        Icons.wifi_outlined,
-        const ConnectivityScreen(),
-      ),
-      _Module(
         'Storage',
         'TokenStore · LocalPrefs · EnvConfig',
         Icons.storage_outlined,
@@ -62,20 +44,8 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       _Module(
-        'Theme',
-        'Persistent light / dark / system',
-        Icons.palette_outlined,
-        ThemeScreen(controller: themeController),
-      ),
-      _Module(
-        'Localization',
-        'LocalizationConfig · resolve()',
-        Icons.language_outlined,
-        const LocalizationScreen(),
-      ),
-      _Module(
         'Widgets',
-        'Buttons · Inputs · Loaders · States · OTP · Image',
+        'Buttons · Inputs · Loaders · States',
         Icons.widgets_outlined,
         const WidgetsScreen(),
       ),
@@ -90,48 +60,6 @@ class HomeScreen extends StatelessWidget {
         'PaginationState<T> · infinite scroll',
         Icons.list_alt_outlined,
         const PaginationScreen(),
-      ),
-      _Module(
-        'Utils',
-        'Debouncer · DateFormatter · Haptic',
-        Icons.build_circle_outlined,
-        const UtilsScreen(),
-      ),
-      _Module(
-        'Permissions',
-        'Check · Request · Open settings',
-        Icons.security_outlined,
-        const PermissionsScreen(),
-      ),
-      _Module(
-        'Media',
-        'Image · Images · Video · File picker',
-        Icons.photo_outlined,
-        const MediaScreen(),
-      ),
-      _Module(
-        'Analytics',
-        'Events · User · Screen · CrashReporter',
-        Icons.analytics_outlined,
-        const AnalyticsScreen(),
-      ),
-      _Module(
-        'Version',
-        'AppVersionChecker · VersionStatus',
-        Icons.system_update_outlined,
-        VersionScreen(client: client),
-      ),
-      _Module(
-        'Push',
-        'PushService interface · FCM wiring',
-        Icons.notifications_active_outlined,
-        const PushScreen(),
-      ),
-      _Module(
-        'Route Guard',
-        'GuardDecision · evaluate() interactive',
-        Icons.route_outlined,
-        const RouteGuardScreen(),
       ),
     ];
 

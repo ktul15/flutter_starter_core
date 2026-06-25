@@ -5,8 +5,6 @@ import 'package:flutter_starter_core/flutter_starter_core.dart';
 import '../cubits/auth/flow_a_cubit.dart';
 import '../cubits/auth/flow_b_cubit.dart';
 import '../cubits/auth/login_cubit.dart';
-import '../cubits/snack.dart';
-
 /// Demonstrates all auth flows supported by [AuthService].
 ///
 /// - **Login** tab: standard email + password sign-in.
@@ -84,7 +82,8 @@ class _LoginTabBodyState extends State<_LoginTabBody> {
     return BlocConsumer<LoginCubit, LoginState>(
       listenWhen: (prev, curr) =>
           curr.snack != null && !identical(curr.snack, prev.snack),
-      listener: (ctx, state) => dispatchSnack(ctx, state.snack!),
+      listener: (ctx, state) => ScaffoldMessenger.of(ctx)
+          .showSnackBar(SnackBar(content: Text(state.snack!.message))),
       builder: (ctx, state) => ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -165,7 +164,8 @@ class _FlowATabBodyState extends State<_FlowATabBody> {
     return BlocConsumer<FlowACubit, FlowAState>(
       listenWhen: (prev, curr) =>
           curr.snack != null && !identical(curr.snack, prev.snack),
-      listener: (ctx, state) => dispatchSnack(ctx, state.snack!),
+      listener: (ctx, state) => ScaffoldMessenger.of(ctx)
+          .showSnackBar(SnackBar(content: Text(state.snack!.message))),
       builder: (ctx, state) => ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -223,14 +223,14 @@ class _FlowATabBodyState extends State<_FlowATabBody> {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
-            Center(
-              child: OtpField(
-                length: 6,
-                autoFocus: false,
-                onCompleted: (otp) =>
-                    ctx.read<FlowACubit>().updateOtp(otp),
-                onChanged: (v) => ctx.read<FlowACubit>().updateOtp(v),
+            TextField(
+              maxLength: 6,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: '6-digit OTP',
+                border: OutlineInputBorder(),
               ),
+              onChanged: ctx.read<FlowACubit>().updateOtp,
             ),
             const SizedBox(height: 24),
             PrimaryButton(
@@ -283,7 +283,8 @@ class _FlowBTabBodyState extends State<_FlowBTabBody> {
     return BlocConsumer<FlowBCubit, FlowBState>(
       listenWhen: (prev, curr) =>
           curr.snack != null && !identical(curr.snack, prev.snack),
-      listener: (ctx, state) => dispatchSnack(ctx, state.snack!),
+      listener: (ctx, state) => ScaffoldMessenger.of(ctx)
+          .showSnackBar(SnackBar(content: Text(state.snack!.message))),
       builder: (ctx, state) => ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -317,14 +318,14 @@ class _FlowBTabBodyState extends State<_FlowBTabBody> {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
-            Center(
-              child: OtpField(
-                length: 6,
-                autoFocus: false,
-                onCompleted: (otp) =>
-                    ctx.read<FlowBCubit>().updateOtp(otp),
-                onChanged: (v) => ctx.read<FlowBCubit>().updateOtp(v),
+            TextField(
+              maxLength: 6,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: '6-digit OTP',
+                border: OutlineInputBorder(),
               ),
+              onChanged: ctx.read<FlowBCubit>().updateOtp,
             ),
             const SizedBox(height: 24),
             PrimaryButton(

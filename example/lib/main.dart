@@ -6,28 +6,20 @@ import 'screens/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await LocalPreferences.create();
-  final themeController = await PersistentThemeModeController.create(prefs);
-  runApp(ShowcaseApp(prefs: prefs, themeController: themeController));
+  runApp(ShowcaseApp(prefs: prefs));
 }
 
-/// Root app — initialises all shared services and passes them into the widget
-/// tree. Demonstrates the recommended wiring pattern for a client project.
+/// Root app — initialises shared services and passes them into the widget tree.
 class ShowcaseApp extends StatefulWidget {
-  const ShowcaseApp({
-    super.key,
-    required this.prefs,
-    required this.themeController,
-  });
+  const ShowcaseApp({super.key, required this.prefs});
 
   final LocalPreferences prefs;
-  final PersistentThemeModeController themeController;
 
   @override
   State<ShowcaseApp> createState() => _ShowcaseAppState();
 }
 
 class _ShowcaseAppState extends State<ShowcaseApp> {
-  // ── Environment config — swap `current` per build flavor ──────────────────
   late final _envConfigs = EnvConfigs(
     current: Environment.dev,
     configs: {
@@ -46,20 +38,13 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
     },
   );
 
-  // ── Networking + auth ──────────────────────────────────────────────────────
   late final _tokenStore = _InMemoryTokenStore();
   late final _client = ApiClient(baseUrl: _envConfigs.config.baseUrl);
   late final _auth = AuthService(client: _client, tokenStore: _tokenStore);
 
-  // ── Localization ───────────────────────────────────────────────────────────
-  final _l10n = LocalizationConfig(
-    supportedLocales: const [Locale('en'), Locale('es'), Locale('fr')],
-  );
-
   @override
   void initState() {
     super.initState();
-    // Auth interceptor: inject bearer token + handle 401 refresh-retry.
     _client.dio.interceptors.insert(
       0,
       AuthInterceptor(
@@ -69,38 +54,29 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
         onAuthExpired: _tokenStore.clear,
       ),
     );
-    // Retry transient network/timeout errors with exponential backoff.
     _client.dio.interceptors.add(RetryInterceptor(dio: _client.dio));
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: widget.themeController,
-      builder: (_, mode, child) => MaterialApp(
-        title: 'flutter_starter_core showcase',
-        debugShowCheckedModeBanner: false,
-        themeMode: mode,
-        theme: AppTheme.light(seedColor: Colors.indigo),
-        darkTheme: AppTheme.dark(seedColor: Colors.indigo),
-        supportedLocales: _l10n.supportedLocales,
-        localizationsDelegates: _l10n.allDelegates,
-        localeResolutionCallback: _l10n.resolve,
-        home: HomeScreen(
-          prefs: widget.prefs,
-          themeController: widget.themeController,
-          tokenStore: _tokenStore,
-          client: _client,
-          auth: _auth,
-          envConfigs: _envConfigs,
-        ),
+    return MaterialApp(
+      title: 'flutter_starter_core showcase',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+      ),
+      home: HomeScreen(
+        prefs: widget.prefs,
+        tokenStore: _tokenStore,
+        client: _client,
+        auth: _auth,
+        envConfigs: _envConfigs,
       ),
     );
   }
 }
 
 /// In-memory [TokenStore] — good for demos and unit tests.
-/// In production use [SecureTokenStore] backed by flutter_secure_storage.
 class _InMemoryTokenStore implements TokenStore {
   String? _access;
   String? _refresh;
