@@ -80,12 +80,21 @@ Multi-round audit: correctness fixes, new API, one breaking change, one removal.
 - **`RetryInterceptor`** barrel export moved into Module 1 with the other
   network interceptors.
 
+- **`AppVersionChecker`** — `toJson()` added to `AppVersionInfo` for disk-cache persistence
+  (round-trips through `fromJson`; excludes `currentVersion` which is always re-read locally).
+- **`AppVersionChecker`** — `==` / `hashCode` added to `AppVersionInfo`; two instances with
+  identical fields are now value-equal (uses `Object.hash`).
+- **`AppVersionChecker`** — `X-Platform` header injected on every request (`ios`, `android`,
+  `web`, etc.) so the server can return a platform-appropriate `update_url`. Opt out with
+  `sendPlatformHeader: false`.
+
 ### Tests
 
-200 tests (up from 148 at 1.0.0). New coverage: `AnalyticsEvent.checked` (5 cases),
+221 tests (up from 148 at 1.0.0). New coverage: `AnalyticsEvent.checked` (5 cases),
 `AuthService.logout` PlatformException absorption, pre-release/build-metadata version
 parsing (3 cases), `ErrorStateView.fromException` safe messages,
-`ConnectivityChecker.onResultChange` de-duplication.
+`ConnectivityChecker.onResultChange` de-duplication, `AppVersionInfo.toJson` (3),
+`AppVersionInfo` equality (4), platform header (2).
 
 ---
 
